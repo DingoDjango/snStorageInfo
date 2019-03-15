@@ -12,20 +12,20 @@ namespace StorageInfo
     {
         /* IL from StorageContainer.OnHandHover(GUIHand hand):
          * IL_0019: call      bool [UnityEngine]UnityEngine.Object::op_Implicit(class [UnityEngine]UnityEngine.Object)
-		 * IL_001E: brfalse   IL_002E
+         * IL_001E: brfalse   IL_002E
          * IL_0023: ldloc.0
          * IL_0024: callvirt  instance bool Constructable::get_constructed()
          * IL_0029: brfalse   IL_0068
-		 * IL_002E: ldsfld    class HandReticle HandReticle::main
-		 * First IL index we snip ---> IL_0033: ldarg.0
-		 * IL_0034: ldfld     string StorageContainer::hoverText
-		 * IL_0039: ldarg.0
-		 * IL_003A: call      instance bool StorageContainer::IsEmpty()
-		 * IL_003F: brfalse   IL_004E
-		 * IL_0044: ldstr     "Empty"
-		 * IL_0049: br        IL_0053
-		 * IL_004E: ldsfld    string [mscorlib]System.String::Empty
-		 * IL_0053: callvirt  instance void HandReticle::SetInteractText(string, string)
+         * IL_002E: ldsfld    class HandReticle HandReticle::main
+         * First IL index we snip ---> IL_0033: ldarg.0
+         * IL_0034: ldfld     string StorageContainer::hoverText
+         * IL_0039: ldarg.0
+         * IL_003A: call      instance bool StorageContainer::IsEmpty()
+         * IL_003F: brfalse   IL_004E
+         * IL_0044: ldstr     "Empty"
+         * IL_0049: br        IL_0053
+         * IL_004E: ldsfld    string [mscorlib]System.String::Empty
+         * IL_0053: callvirt  instance void HandReticle::SetInteractText(string, string)
          * Last IL index we snip, folding the IL nicely on itself ---> IL_0058: ldsfld    class HandReticle HandReticle::main */
         internal static IEnumerable<CodeInstruction> Patch_StorageContainer_OnHandHover_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -101,24 +101,27 @@ namespace StorageInfo
                 string customInfoText = string.Empty;
                 ItemsContainer container = _storage.container;
 
-                if (container.count <= 0) // replace with container.IsEmpty()
+                if (container != null)
                 {
-                    customInfoText = "ContainerEmpty".Translate();
-                }
+                    if (container.count <= 0) // replace with container.IsEmpty()
+                    {
+                        customInfoText = "ContainerEmpty".Translate();
+                    }
 
-                else if (container.count == 1)
-                {
-                    customInfoText = "ContainerOneItem".Translate();
-                }
+                    else if (container.count == 1)
+                    {
+                        customInfoText = "ContainerOneItem".Translate();
+                    }
 
-                else if (!container.HasRoomFor(1, 1)) // replace with container.IsFull()
-                {
-                    customInfoText = "ContainerFull".Translate();
-                }
+                    else if (!container.HasRoomFor(1, 1)) // replace with container.IsFull()
+                    {
+                        customInfoText = "ContainerFull".Translate();
+                    }
 
-                else
-                {
-                    customInfoText = "ContainerNonempty".FormatSingle(container.count.ToString());
+                    else
+                    {
+                        customInfoText = "ContainerNonempty".FormatSingle(container.count.ToString());
+                    }
                 }
 
                 HandReticle.main.SetInteractText(_storage.hoverText, customInfoText, true, false, HandReticle.Hand.Left); // From HandReticle.SetInteractText(string, string)                

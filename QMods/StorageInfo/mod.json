@@ -2,7 +2,7 @@
   "Id": "StorageInfo",
   "DisplayName": "Storage Info",
   "Author": "Dingo",
-  "Version": "1.0.0",
+  "Version": "1.0.1",
   "Enable": true,
   "Game": "Subnautica",
   "AssemblyName": "StorageInfo.dll",

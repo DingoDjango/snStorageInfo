@@ -22,28 +22,8 @@ namespace StorageInfo
             }
         }
 
-        private static bool TryTranslate(string candidate, out string translated)
-        {
-            if (languageStrings.TryGetValue(candidate, out translated))
-            {
-                return true;
-            }
-
-            else
-            {
-                LoadLanguageData();
-
-                if (languageStrings.TryGetValue(candidate, out translated))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         // Json streaming code taken from Language.LoadLanguageFile(string)
-        internal static void LoadLanguageData()
+        private static void LoadLanguageData()
         {
             string currentLanguage = Language.main.GetCurrentLanguage();
 
@@ -57,7 +37,12 @@ namespace StorageInfo
 
             if (!File.Exists(langFile))
             {
-                throw new Exception("[StorageInfo] :: Could not find language file.");
+                langFile = Path.Combine(langFolder, "English.json");
+
+                if (!File.Exists(langFile))
+                {
+                    throw new Exception("[StorageInfo] :: Could not find language file.");
+                }
             }
 
             JsonData jsonData;
@@ -84,6 +69,25 @@ namespace StorageInfo
             }
         }
 
+        private static bool TryTranslate(string candidate, out string translated)
+        {
+            if (languageStrings.TryGetValue(candidate, out translated))
+            {
+                return true;
+            }
+
+            else
+            {
+                LoadLanguageData();
+
+                if (languageStrings.TryGetValue(candidate, out translated))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         internal static string Translate(this string source)
         {
