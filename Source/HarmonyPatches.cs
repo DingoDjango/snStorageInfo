@@ -50,7 +50,7 @@ namespace StorageInfo
             {
                 CodeInstruction instruction = codes[i];
 
-                // HandleReticle::main is the first IL we need
+                // IL_0033 is the first IL we aim to replace
                 if (!foundFirstHandReticle)
                 {
                     if (instruction.opcode == OpCodes.Ldsfld && instruction.operand == handleReticleMain
@@ -63,7 +63,7 @@ namespace StorageInfo
                     }
                 }
 
-                // SetInteractText is the final IL we aim to replace
+                // IL_0058 is the final IL we aim to replace
                 else if (instruction.opcode == OpCodes.Ldsfld && instruction.operand == handleReticleMain
                     && codes[i - 1].opcode == OpCodes.Callvirt && codes[i - 1].operand == setInteractText)
                 {
@@ -96,7 +96,7 @@ namespace StorageInfo
 
         private static void Patch_SetCurrentLanguage_Postfix()
         {
-            Translation.ClearCache();
+            Translation.ReloadLanguage();
         }
 
         internal static void InitializeHarmony()

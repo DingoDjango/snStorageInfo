@@ -78,7 +78,7 @@ namespace StorageInfo
 
             else
             {
-                LoadLanguageData();
+                ReloadLanguage();
 
                 if (languageStrings.TryGetValue(candidate, out translated))
                 {
@@ -122,9 +122,11 @@ namespace StorageInfo
             return basic;
         }
 
-        internal static void ClearCache()
+        internal static void ReloadLanguage()
         {
             languageStrings.Clear();
+
+            LoadLanguageData();
         }
     }
 }
