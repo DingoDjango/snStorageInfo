@@ -27,7 +27,7 @@ namespace StorageInfo
          * IL_004E: ldsfld    string [mscorlib]System.String::Empty
          * IL_0053: callvirt  instance void HandReticle::SetInteractText(string, string)
          * Last IL index we snip, folding the IL nicely on itself ---> IL_0058: ldsfld    class HandReticle HandReticle::main */
-        internal static IEnumerable<CodeInstruction> Patch_StorageContainer_OnHandHover_Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Patch_StorageContainer_OnHandHover_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             FieldInfo handleReticleMain = AccessTools.Field(typeof(HandReticle), nameof(HandReticle.main));
             MethodInfo setInteractText = AccessTools.Method(typeof(HandReticle), nameof(HandReticle.SetInteractText), new Type[] { typeof(string), typeof(string) });
@@ -92,6 +92,37 @@ namespace StorageInfo
             }
 
             return instructions;
+        }
+
+        private static void Patch_SetCurrentLanguage_Postfix()
+        {
+            Translation.ClearCache();
+        }
+
+        internal static void InitializeHarmony()
+        {
+            HarmonyInstance harmony = HarmonyInstance.Create("dingo.storageinfo");
+
+#if DEBUG
+            HarmonyInstance.DEBUG = true;
+#endif
+
+            MethodInfo containerOnHandHover = AccessTools.Method(typeof(StorageContainer), nameof(StorageContainer.OnHandHover));
+            MethodInfo setLanguage = AccessTools.Method(typeof(Language), nameof(Language.SetCurrentLanguage));
+
+            // Remove original SetInteractText and inject SetCustomInteractText
+            harmony.Patch(
+                original: containerOnHandHover,
+                prefix: null,
+                postfix: null,
+                transpiler: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_StorageContainer_OnHandHover_Transpiler)));
+
+            // Reset language cache upon language change
+            harmony.Patch(
+                original: setLanguage,
+                prefix: null,
+                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_SetCurrentLanguage_Postfix)),
+                transpiler: null);
         }
 
         public static void SetCustomInteractText(StorageContainer _storage)

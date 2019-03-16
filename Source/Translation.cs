@@ -121,5 +121,10 @@ namespace StorageInfo
 
             return basic;
         }
+
+        internal static void ClearCache()
+        {
+            languageStrings.Clear();
+        }
     }
 }
