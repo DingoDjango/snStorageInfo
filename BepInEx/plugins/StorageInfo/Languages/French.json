@@ -1,0 +1,5 @@
+﻿{
+  "ContainerEmpty": "vide",
+  "ContainerFull": "plein",
+  "ContainerNonempty": "{0} objets (pas plein)"
+}

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using LitJson;
 using UnityEngine;
 
@@ -10,17 +9,11 @@ namespace StorageInfo
     internal static class Translation
     {
         private const string LanguagesFolder = "Languages";
+        private const string DefaultLanguage = "English";
 
         private static readonly Dictionary<string, string> languageStrings = new Dictionary<string, string>();
 
-        private static string GetAssemblyDirectory
-        {
-            get
-            {
-                string fullPath = Assembly.GetExecutingAssembly().Location;
-                return Path.GetDirectoryName(fullPath);
-            }
-        }
+        private static string GetAssemblyDirectory => Path.GetDirectoryName(typeof(Translation).Assembly.Location);
 
         // Json streaming code taken from Language.LoadLanguageFile(string)
         private static void LoadLanguageData()
@@ -29,7 +22,7 @@ namespace StorageInfo
 
             if (string.IsNullOrEmpty(currentLanguage))
             {
-                currentLanguage = "English";
+                currentLanguage = DefaultLanguage;
             }
 
             string langFolder = Path.Combine(GetAssemblyDirectory, LanguagesFolder);
@@ -37,11 +30,11 @@ namespace StorageInfo
 
             if (!File.Exists(langFile))
             {
-                langFile = Path.Combine(langFolder, "English.json");
+                langFile = Path.Combine(langFolder, DefaultLanguage + ".json");
 
                 if (!File.Exists(langFile))
                 {
-                    throw new Exception("[StorageInfo] :: Could not find language file.");
+                    throw new Exception($"{ModPlugin.modName} :: Could not find language file.");
                 }
             }
 
@@ -57,7 +50,7 @@ namespace StorageInfo
                 catch (Exception ex)
                 {
                     Debug.Log(ex.ToString());
-                    Debug.Log($"[StorageInfo] :: Failed while loading language json.");
+                    ModPlugin.LogMessage("Failed while loading language json.");
 
                     return;
                 }
@@ -96,12 +89,12 @@ namespace StorageInfo
                 return translated;
             }
 
-            Debug.Log($"[StorageInfo] :: Could not find translated string for `{source}`");
+            ModPlugin.LogMessage($"Could not find translated string for `{source}`");
 
             return source;
         }
 
-        internal static string FormatSingle(this string source, string arg0)
+        internal static string FormatTranslate(this string source, string arg0)
         {
             string basic = source.Translate();
 
@@ -115,7 +108,7 @@ namespace StorageInfo
                 catch (Exception ex)
                 {
                     Debug.Log(ex.ToString());
-                    Debug.Log($"[StorageInfo] :: Failed to format '{source}' with arg0 `{arg0}'");
+                    ModPlugin.LogMessage($"Failed to format '{source}' with arg0 `{arg0}'");
                 }
             }
 
