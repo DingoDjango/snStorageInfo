@@ -53,6 +53,11 @@ namespace StorageInfo
                     customSubscriptText = "ContainerFull".Translate();
                 }
 
+                else if (itemStorage.count == 1)
+                {
+                    customSubscriptText = "ContainerOneItem".Translate();
+                }
+
                 else
                 {
                     customSubscriptText = "ContainerNonempty".FormatTranslate(itemStorage.count.ToString());

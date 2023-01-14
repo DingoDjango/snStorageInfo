@@ -8,7 +8,7 @@ namespace StorageInfo
     {
         private const string modGUID = "Dingo.SN.StorageInfo";
         internal const string modName = "Storage Info";
-        private const string modVersion = "2.0.0";
+        private const string modVersion = "2.0.1";
 
         internal static void LogMessage(string message)
         {

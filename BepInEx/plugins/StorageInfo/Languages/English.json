@@ -1,5 +1,6 @@
 ﻿{
   "ContainerEmpty": "empty",
   "ContainerFull": "full",
+  "ContainerOneItem": "1 item (not full)",
   "ContainerNonempty": "{0} items (not full)"
 }
