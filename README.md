@@ -7,6 +7,8 @@ In Subnautica, only empty containers relay their status to the player. With this
 - Full
 - Have a certain amount of items, but aren't full
 
+**For Below Zero instructions please view the [Nexus mod page](https://www.nexusmods.com/subnauticabelowzero/mods/361).**
+
 ### **Installation:**
 
 1. Install [BepInEx for Subnautica](https://www.nexusmods.com/subnautica/mods/1108)
