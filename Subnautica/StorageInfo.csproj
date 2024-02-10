@@ -61,8 +61,8 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\LitJson.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SMLHelper">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Subnautica\BepInEx\plugins\Modding Helper\SMLHelper.dll</HintPath>
+    <Reference Include="Nautilus">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Subnautica\BepInEx\plugins\Nautilus\Nautilus.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -97,13 +97,7 @@ SET ZIPFILE=D:\Downloads\$(ProjectName).zip
 
 xcopy "$(ProjectDir)BepInEx\*" "%25MODDIR%25" /i /e /r /y
 
-7z a -mx9 "%25ZIPFILE%25" "$(ProjectDir)BepInEx"
-
-cd $(ProjectDir)
-del /f /s /q bin
-del /f /s /q obj
-rmdir /s /q bin
-rmdir /s /q obj</PostBuildEvent>
+7z a -mx9 "%25ZIPFILE%25" "$(ProjectDir)BepInEx"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using SMLHelper.V2.Utility;
+using Nautilus.Utility;
 
 namespace StorageInfo
 {
