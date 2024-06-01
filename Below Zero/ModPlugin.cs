@@ -1,23 +1,23 @@
-﻿//using BepInEx;
-//using UnityEngine;
+﻿using BepInEx;
+using UnityEngine;
 
-//namespace StorageInfo_BZ
-//{
-//    [BepInPlugin(modGUID, modName, modVersion)]
-//    public class ModPlugin : BaseUnityPlugin
-//    {
-//        private const string modGUID = "Dingo.SN.StorageInfo";
-//        internal const string modName = "Storage Info";
-//        private const string modVersion = "2.0.1";
+namespace StorageInfo
+{
+    [BepInPlugin(modGUID, modName, modVersion)]
+    public class ModPlugin : BaseUnityPlugin
+    {
+        public const string modGUID = "Dingo.SNBZ.StorageInfo";
+        public const string modName = "Storage Info BZ";
+        public const string modVersion = "2.1.1";
 
-//        internal static void LogMessage(string message)
-//        {
-//            Debug.Log($"{modName} :: " + message);
-//        }
+        public static void LogMessage(string message)
+        {
+            Debug.Log($"{modName} :: ${message}");
+        }
 
-//        public void Start()
-//        {
-//            HarmonyPatches.InitializeHarmony();
-//        }
-//    }
-//}
+        public void Start()
+        {
+            HarmonyPatches.InitializeHarmony();
+        }
+    }
+}

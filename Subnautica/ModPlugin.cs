@@ -6,13 +6,13 @@ namespace StorageInfo
     [BepInPlugin(modGUID, modName, modVersion)]
     public class ModPlugin : BaseUnityPlugin
     {
-        private const string modGUID = "Dingo.SN.StorageInfo";
-        internal const string modName = "Storage Info";
-        private const string modVersion = "2.1.0";
+        public const string modGUID = "Dingo.SN.StorageInfo";
+        public const string modName = "Storage Info";
+        public const string modVersion = "2.1.1";
 
-        internal static void LogMessage(string message)
+        public static void LogMessage(string message)
         {
-            Debug.Log($"{modName} :: " + message);
+            Debug.Log($"{modName} :: ${message}");
         }
 
         public void Start()
