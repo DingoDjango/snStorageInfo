@@ -1,4 +1,4 @@
-# **Storage Info for Subnautica**
+﻿# **Storage Info for Subnautica**
 
 ### **Description:**
 
@@ -11,10 +11,10 @@ In Subnautica, only empty containers relay their status to the player. With this
 
 ### **Installation:**
 
-1. Install [BepInEx for Subnautica](https://www.nexusmods.com/subnautica/mods/1108)
-2. Install [SMLHelper (Modding Helper)](https://www.nexusmods.com/subnautica/mods/113)
+1. Install [BepInEx for Subnautica](https://www.nexusmods.com/subnautica/mods/1108)
+2. Install [Nautilus](https://www.nexusmods.com/subnautica/mods/1262)
 3. Download the latest zip file from the [Files tab](https://www.nexusmods.com/subnautica/mods/229/?tab=files)
-4. Unzip the contents of the zip to the game's main directory (where Subnautica.exe can be found)
+4. Unzip the contents of the zip to the game's main directory (where Subnautica.exe can be found)
 
 ### **(Optional) Translation:**
 
@@ -27,7 +27,7 @@ In Subnautica, only empty containers relay their status to the player. With this
 ### **FAQ:**
 
 - **Q. Does this mod support the latest Subnautica update?**
-- A. Tested on Subnautica version Dec-2022 71137 (Living Large update)
+- A. Latest version tested on May 2024
 - **Q. Is this mod safe to add or remove from an existing save?**
 - A. Yes
 - **Q. Does this mod have any known conflicts?**
@@ -36,6 +36,6 @@ In Subnautica, only empty containers relay their status to the player. With this
 [Source code can be found here.](https://github.com/DingoDjango/snStorageInfo)
 
 ### **Credits:**
-- Powered by [Harmony](https://github.com/pardeike/Harmony)
-- Using [SMLHelper](https://www.nexusmods.com/subnautica/mods/113)
+- Powered by [Harmony](https://github.com/pardeike/Harmony)
+- Using [Nautilus](https://www.nexusmods.com/subnautica/mods/1262)
 - Translations by [acidscorch](https://github.com/acidscorch), [mstislavovich](https://forums.nexusmods.com/index.php?/user/23416669-mstislavovich/), [Yanuut](https://github.com/Yanuut), [Zemogiter](https://github.com/Zemogiter)
