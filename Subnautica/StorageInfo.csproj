@@ -127,6 +127,14 @@
       <Link>Languages\Russian.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\Shared\Languages\Spanish %28Latin America%29.json">
+      <Link>Languages\Spanish %28Latin America%29.json</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Shared\Languages\Spanish.json">
+      <Link>Languages\Spanish.json</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

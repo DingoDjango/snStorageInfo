@@ -117,6 +117,14 @@
       <Link>Languages\Russian.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="..\Shared\Languages\Spanish %28Latin America%29.json">
+      <Link>Languages\Spanish %28Latin America%29.json</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Shared\Languages\Spanish.json">
+      <Link>Languages\Spanish.json</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
@@ -129,7 +137,7 @@ SET ZIPFILE=D:\Downloads\$(ProjectName).zip
 
 xcopy "$(ProjectDir)BepInEx\*" "%25MODDIR%25" /i /e /r /y
 
-7z a -mx9 "%25ZIPFILE%25" "$(ProjectDir)QMods"
+7z a -mx9 "%25ZIPFILE%25" "$(ProjectDir)BepInEx"
 		</PostBuildEvent>
   </PropertyGroup>
 </Project>
