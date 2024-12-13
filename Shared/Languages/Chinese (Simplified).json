@@ -1,0 +1,6 @@
+﻿{
+  "ContainerEmpty": "\u7a7a\u7684",
+  "ContainerFull": "\u5df2\u6ee1",
+  "ContainerOneItem": "1 \u4ef6\u7269\u54c1 (\u672a\u6ee1)",
+  "ContainerNonempty": "{0} \u4ef6\u7269\u54c1 (\u672a\u6ee1)"
+}
