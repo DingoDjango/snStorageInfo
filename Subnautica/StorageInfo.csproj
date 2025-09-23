@@ -107,32 +107,32 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Shared\Languages\English.json">
-      <Link>Languages\English.json</Link>
+    <None Include="..\Shared\Localization\English.json">
+      <Link>Localization\English.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Shared\Languages\French.json">
-      <Link>Languages\French.json</Link>
+    <None Include="..\Shared\Localization\French.json">
+      <Link>Localization\French.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Shared\Languages\German.json">
-      <Link>Languages\German.json</Link>
+    <None Include="..\Shared\Localization\German.json">
+      <Link>Localization\German.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Shared\Languages\Polish.json">
-      <Link>Languages\Polish.json</Link>
+    <None Include="..\Shared\Localization\Polish.json">
+      <Link>Localization\Polish.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Shared\Languages\Russian.json">
-      <Link>Languages\Russian.json</Link>
+    <None Include="..\Shared\Localization\Russian.json">
+      <Link>Localization\Russian.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Shared\Languages\Spanish %28Latin America%29.json">
-      <Link>Languages\Spanish %28Latin America%29.json</Link>
+    <None Include="..\Shared\Localization\Spanish %28Latin America%29.json">
+      <Link>Localization\Spanish %28Latin America%29.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="..\Shared\Languages\Spanish.json">
-      <Link>Languages\Spanish.json</Link>
+    <None Include="..\Shared\Localization\Spanish.json">
+      <Link>Localization\Spanish.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

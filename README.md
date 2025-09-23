@@ -18,7 +18,7 @@ In Subnautica, only empty containers relay their status to the player. With this
 
 ### **(Optional) Translation:**
 
-1. Navigate to *...\Subnautica\BepInEx\plugins\StorageInfo\Languages*
+1. Navigate to *...\Subnautica\BepInEx\plugins\StorageInfo\Localization*
 2. Copy *English.json* and change the file name to match your language
     > Valid language names are found in *...\Subnautica\Subnautica_Data\StreamingAssets\SNUnmanagedData\LanguageFiles*
 3. Translate the file. Do not touch the keys ("ContainerFull"), only the values ("full")
@@ -27,7 +27,7 @@ In Subnautica, only empty containers relay their status to the player. With this
 ### **FAQ:**
 
 - **Q. Does this mod support the latest Subnautica update?**
-- A. Latest version tested on May 2024
+- A. Latest version tested on September 2025
 - **Q. Is this mod safe to add or remove from an existing save?**
 - A. Yes
 - **Q. Does this mod have any known conflicts?**

@@ -15,11 +15,6 @@ namespace StorageInfo
             }
         }
 
-        private static void Patch_SetCurrentLanguage_Postfix()
-        {
-            Translation.ReloadLanguage();
-        }
-
         internal static void InitializeHarmony()
         {
             Harmony harmony = new Harmony("Dingo.Harmony.StorageInfo");
@@ -29,12 +24,6 @@ namespace StorageInfo
             harmony.Patch(
                 original: AccessTools.Method(typeof(StorageContainer), nameof(StorageContainer.OnHandHover)),
                 postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandHover_Postfix)));
-
-            /* Reset language cache on game language change */
-            // Patch: Language.SetCurrentLanguage
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Language), nameof(Language.SetCurrentLanguage)),
-                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_SetCurrentLanguage_Postfix)));
         }
 
         public static void SetCustomInteractText(ItemsContainer itemStorage)
