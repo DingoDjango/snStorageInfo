@@ -1,0 +1,6 @@
+﻿{
+  "ContainerEmpty": "空",
+  "ContainerFull": "满",
+  "ContainerOneItem": "1 物品 (未满)",
+  "ContainerNonempty": "{0} 物品 (未满)"
+}
