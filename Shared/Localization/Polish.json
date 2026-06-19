@@ -2,5 +2,12 @@
   "ContainerEmpty": "puste",
   "ContainerFull": "pełne",
   "ContainerOneItem": "1 przedmiot (nie pełne)",
-  "ContainerNonempty": "{0} przedmioty/ów (nie pełne)"
+  "ContainerNonempty": "{0} przedmioty/ów (nie pełne)",
+  "ContainerOneItemSlotsFree": "1 przedmiot, {0} wolnych slotów",
+  "ContainerNonemptySlotsFree": "{0} przedmioty/ów, {1} wolnych slotów",
+  "SlotsOccupied": "zajęte",
+  "DisplayMode": "Tryb wyświetlania",
+  "DisplayModeDefault": "Domyślny",
+  "DisplayModeSlotsOnly": "Tylko sloty",
+  "DisplayModeDetailedList": "Szczegółowy"
 }

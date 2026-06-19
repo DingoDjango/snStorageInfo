@@ -1,0 +1,13 @@
+﻿{
+  "ContainerEmpty": "空",
+  "ContainerFull": "滿",
+  "ContainerOneItem": "1 物品 (未滿)",
+  "ContainerNonempty": "{0} 物品 (未滿)",
+  "ContainerOneItemSlotsFree": "1 物品, {0} 空餘槽位",
+  "ContainerNonemptySlotsFree": "{0} 物品, {1} 空餘槽位",
+  "SlotsOccupied": "已占用",
+  "DisplayMode": "顯示模式",
+  "DisplayModeDefault": "默認",
+  "DisplayModeSlotsOnly": "僅槽位",
+  "DisplayModeDetailedList": "詳細"
+}

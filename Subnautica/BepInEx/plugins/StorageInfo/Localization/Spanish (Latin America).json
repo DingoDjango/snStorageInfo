@@ -2,5 +2,12 @@
   "ContainerEmpty": "Vacío",
   "ContainerFull": "Lleno",
   "ContainerOneItem": "1 objeto (No lleno)",
-  "ContainerNonempty": "{0} objetos (No lleno)"
+  "ContainerNonempty": "{0} objetos (No lleno)",
+  "ContainerOneItemSlotsFree": "1 objeto, {0} ranuras libres",
+  "ContainerNonemptySlotsFree": "{0} objetos, {1} ranuras libres",
+  "SlotsOccupied": "ocupado",
+  "DisplayMode": "Modo de visualización",
+  "DisplayModeDefault": "Por defecto",
+  "DisplayModeSlotsOnly": "Solo ranuras",
+  "DisplayModeDetailedList": "Detallado"
 }

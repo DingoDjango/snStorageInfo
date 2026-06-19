@@ -2,5 +2,12 @@
   "ContainerEmpty": "Пусто",
   "ContainerFull": "Полностью заполнено",
   "ContainerOneItem": "Заполнено 1 предметом",
-  "ContainerNonempty": "Заполнено {0} предметами"
+  "ContainerNonempty": "Заполнено {0} предметами",
+  "ContainerOneItemSlotsFree": "1 предмет, {0} слотов свободно",
+  "ContainerNonemptySlotsFree": "Предметов: {0}, слотов свободно: {1}",
+  "SlotsOccupied": "занято",
+  "DisplayMode": "Режим отображения",
+  "DisplayModeDefault": "По умолчанию",
+  "DisplayModeSlotsOnly": "Только слоты",
+  "DisplayModeDetailedList": "Подробно"
 }

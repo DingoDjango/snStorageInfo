@@ -83,6 +83,10 @@
     <Reference Include="System.Xml">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
@@ -91,14 +95,31 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.UIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Shared\HarmonyPatches.cs">
       <Link>HarmonyPatches.cs</Link>
+    </Compile>
+    <Compile Include="..\Shared\ModOptions.cs">
+      <Link>ModOptions.cs</Link>
+    </Compile>
+    <Compile Include="..\Shared\StorageDetailUI.cs">
+      <Link>StorageDetailUI.cs</Link>
+    </Compile>
+    <Compile Include="..\Shared\StorageSlotInfo.cs">
+      <Link>StorageSlotInfo.cs</Link>
     </Compile>
     <Compile Include="..\Shared\Translation.cs">
       <Link>Translation.cs</Link>
@@ -107,43 +128,19 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Shared\Localization\English.json">
-      <Link>Localization\English.json</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="..\Shared\Localization\French.json">
-      <Link>Localization\French.json</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="..\Shared\Localization\German.json">
-      <Link>Localization\German.json</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="..\Shared\Localization\Polish.json">
-      <Link>Localization\Polish.json</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="..\Shared\Localization\Russian.json">
-      <Link>Localization\Russian.json</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="..\Shared\Localization\Spanish %28Latin America%29.json">
-      <Link>Localization\Spanish %28Latin America%29.json</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="..\Shared\Localization\Spanish.json">
-      <Link>Localization\Spanish.json</Link>
+    <None Include="..\Shared\Localization\*.json">
+      <Link>Localization\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>SET MODDIR=C:\Program Files (x86)\Steam\steamapps\common\Subnautica\BepInEx\
-SET ZIPFILE=D:\Downloads\$(ProjectName).zip
+SET ZIPFILE=E:\Downloads\$(ProjectName).zip
 
 xcopy "$(ProjectDir)BepInEx\*" "%25MODDIR%25" /i /e /r /y
 
-7z a -mx9 "%25ZIPFILE%25" "$(ProjectDir)BepInEx"</PostBuildEvent>
+"C:\Program Files\7-Zip\7z.exe" a -mx9 "%25ZIPFILE%25" "$(ProjectDir)BepInEx"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Microsoft.Common.targets.
