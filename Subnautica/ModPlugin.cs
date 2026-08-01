@@ -16,7 +16,7 @@ namespace StorageInfo
 
         public static void LogMessage(string message)
         {
-            Debug.Log($"{modName} :: ${message}");
+            Debug.Log($"{modName} :: {message}");
 		}
 
 		private void Awake()

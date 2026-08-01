@@ -1,3 +1,4 @@
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,10 +6,24 @@ namespace StorageInfo
 {
     public static class StorageDetailUI
     {
+        // Max grid size before scaling down. Increase to allow larger containers at full size.
         private const float MaxPreviewWidth = 320f;
         private const float MaxPreviewHeight = 400f;
+
+        // Space between panel border and grid content.
         private const float PanelPadding = 10f;
-        private const float ScreenMargin = 36f;
+
+        // Horizontal anchor for panel center. 0.5 = screen center, 1.0 = right edge.
+        // 0.75 = halfway between reticle and right edge.
+        private const float PanelAnchorX = 0.75f;
+
+        // Vertical anchor for panel center. 0.5 = vertical center of screen.
+        private const float PanelAnchorY = 0.5f;
+
+        // Fine-tune position after anchor placement (pixels, canvas space).
+        private static readonly Vector2 PanelOffset = Vector2.zero;
+
+        // Must match vanilla uGUI_ItemsContainer cell size.
         private const int CellSize = 71;
 
         private static GameObject root;
@@ -17,6 +32,8 @@ namespace StorageInfo
         private static uGUI_ItemsContainerView containerView;
         private static ItemsContainer boundContainer;
         private static bool built;
+        private static Sprite panelSprite;
+        private static RawImage gridImage;
 
         public static void Show(ItemsContainer container)
         {
@@ -39,11 +56,15 @@ namespace StorageInfo
                 containerView.Init(container);
                 DisableIconRaycasts();
                 boundContainer = container;
+
+                ApplyGridAppearance();
+                ApplyPanelAppearance();
             }
 
             LayoutPanel(container);
             root.transform.SetAsLastSibling();
             root.SetActive(true);
+
             containerView.DoUpdate();
             DisableIconRaycasts();
         }
@@ -83,6 +104,18 @@ namespace StorageInfo
             {
                 Object.Destroy(root);
                 root = null;
+            }
+
+            if (panelSprite != null)
+            {
+                Object.Destroy(panelSprite);
+                panelSprite = null;
+            }
+
+            if (gridImage != null)
+            {
+                Object.Destroy(gridImage);
+                gridImage = null;
             }
 
             panelRect = null;
@@ -151,13 +184,12 @@ namespace StorageInfo
             panelObj.layer = uiLayer;
             panelObj.transform.SetParent(root.transform, false);
             panelRect = panelObj.AddComponent<RectTransform>();
-            panelRect.anchorMin = new Vector2(1f, 0.5f);
-            panelRect.anchorMax = new Vector2(1f, 0.5f);
-            panelRect.pivot = new Vector2(1f, 0.5f);
+            panelRect.anchorMin = new Vector2(PanelAnchorX, PanelAnchorY);
+            panelRect.anchorMax = new Vector2(PanelAnchorX, PanelAnchorY);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
 
             Image panelImage = panelObj.AddComponent<Image>();
             panelImage.raycastTarget = false;
-            panelImage.color = new Color(0.04f, 0.07f, 0.11f, 0.92f);
 
             GameObject contentObj = new GameObject("Content");
             contentObj.layer = uiLayer;
@@ -190,7 +222,8 @@ namespace StorageInfo
 
             RawImage gridImage = gridObj.AddComponent<RawImage>();
             gridImage.raycastTarget = false;
-            ApplyVanillaGridAppearance(gridImage);
+            // Set initial uvRect so grid tiles correctly once texture is assigned
+            gridImage.uvRect = new Rect(0f, 0f, 1f, 1f);
 
             containerView = viewObj.AddComponent<uGUI_ItemsContainerView>();
             containerView.rectTransform = viewRect;
@@ -198,23 +231,76 @@ namespace StorageInfo
 
             root.SetActive(false);
             built = true;
+
             return true;
         }
 
-        private static void ApplyVanillaGridAppearance(RawImage gridImage)
+        private static void ApplyGridAppearance()
         {
-            uGUI_InventoryTab inventoryTab = uGUI.main.GetComponentInChildren<uGUI_InventoryTab>(true);
+            uGUI_ItemsContainerView view = uGUI.main.GetComponentInChildren<uGUI_ItemsContainerView>(true);
+            if (view != null && view.grid != null)
+            {
+                gridImage.texture = view.grid.texture;
+                gridImage.material = view.grid.material;
+                gridImage.color = view.grid.color;
+                
+                return;
+            }
 
-            if (inventoryTab == null || inventoryTab.storage == null || inventoryTab.storage.grid == null)
+            uGUI_ItemsContainer container = uGUI.main.GetComponentInChildren<uGUI_ItemsContainer>(true);
+            if (container != null && container.grid != null)
+            {
+                gridImage.texture = container.grid.texture;
+                gridImage.material = container.grid.material;
+                gridImage.color = container.grid.color;
+                
+                return;
+            }
+        }
+
+        // Generate transparent grid overlay for panel background.
+        private static Sprite LoadPanelSprite()
+        {
+            if (panelSprite != null)
+                return panelSprite;
+
+            int gridSize = 32;
+            Texture2D texture = new Texture2D(gridSize, gridSize, TextureFormat.RGBA32, false);
+
+            for (int y = 0; y < gridSize; y++)
+            {
+                for (int x = 0; x < gridSize; x++)
+                {
+                    float gridAlpha = 0.15f; // Dark translucent overlay
+
+                    if (x % 4 == 0 || y % 4 == 0)
+                        gridAlpha *= 2f;
+
+                    texture.SetPixel(x, y, new Color(0f, 0f, 0f, Mathf.Clamp(gridAlpha, 0f, 1f)));
+                }
+            }
+
+            texture.Apply();
+            panelSprite = Sprite.Create(texture, new Rect(0f, 0f, gridSize, gridSize), new Vector2(0.5f, 0.5f));
+            
+            return panelSprite;
+        }
+
+        // Apply transparent grid overlay (no solid color border).
+        private static void ApplyPanelAppearance()
+        {
+            Image panelImage = panelRect.GetComponent<Image>();
+            if (panelImage == null)
             {
                 return;
             }
 
-            RawImage sourceGrid = inventoryTab.storage.grid;
-            gridImage.texture = sourceGrid.texture;
-            gridImage.material = sourceGrid.material;
-            gridImage.color = sourceGrid.color;
-            gridImage.uvRect = sourceGrid.uvRect;
+            Sprite bgSprite = LoadPanelSprite();
+            if (bgSprite != null)
+            {
+                panelImage.sprite = bgSprite;
+                panelImage.type = Image.Type.Simple;
+            }
         }
 
         private static void PrepareContainerLayout(ItemsContainer container)
@@ -242,11 +328,10 @@ namespace StorageInfo
             float scale = Mathf.Min(1f, MaxPreviewWidth / gridWidth, MaxPreviewHeight / gridHeight);
 
             contentRect.localScale = new Vector3(scale, scale, 1f);
-
+            
             float panelWidth = gridWidth * scale + PanelPadding * 2f;
             float panelHeight = gridHeight * scale + PanelPadding * 2f;
             panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
-            panelRect.anchoredPosition = new Vector2(-ScreenMargin, 0f);
         }
 
         private static void DisableIconRaycasts()

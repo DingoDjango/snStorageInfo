@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Nautilus.Utility;
 using UnityEngine;
 
@@ -6,9 +6,9 @@ namespace StorageInfo
 {
     public class HarmonyPatches
     {
-        private static StorageContainer hoveredStorage;
+        public static StorageContainer hoveredStorage;
 
-        private static void Patch_OnHandHover_Postfix(StorageContainer __instance)
+            private static void Patch_OnHandHover_Postfix(StorageContainer __instance)
         {
             if (__instance == null || __instance.container == null)
             {
