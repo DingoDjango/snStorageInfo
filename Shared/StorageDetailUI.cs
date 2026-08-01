@@ -1,6 +1,9 @@
 using HarmonyLib;
+using System;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.TextCore;
 
 namespace StorageInfo
 {
@@ -13,22 +16,13 @@ namespace StorageInfo
         // Space between panel border and grid content.
         private const float PanelPadding = 10f;
 
-        // Horizontal anchor for panel center. 0.5 = screen center, 1.0 = right edge.
-        // 0.75 = halfway between reticle and right edge.
-        private const float PanelAnchorX = 0.75f;
-
-        // Vertical anchor for panel center. 0.5 = vertical center of screen.
-        private const float PanelAnchorY = 0.5f;
-
-        // Fine-tune position after anchor placement (pixels, canvas space).
-        private static readonly Vector2 PanelOffset = Vector2.zero;
-
         // Must match vanilla uGUI_ItemsContainer cell size.
         private const int CellSize = 71;
 
         private static GameObject root;
         private static RectTransform panelRect;
         private static RectTransform contentRect;
+        private static RectTransform borderRect;
         private static uGUI_ItemsContainerView containerView;
         private static ItemsContainer boundContainer;
         private static bool built;
@@ -62,6 +56,7 @@ namespace StorageInfo
             }
 
             LayoutPanel(container);
+            ApplyOffset();
             root.transform.SetAsLastSibling();
             root.SetActive(true);
 
@@ -102,22 +97,23 @@ namespace StorageInfo
 
             if (root != null)
             {
-                Object.Destroy(root);
+                UnityEngine.Object.Destroy(root);
                 root = null;
             }
 
             if (panelSprite != null)
             {
-                Object.Destroy(panelSprite);
+                UnityEngine.Object.Destroy(panelSprite);
                 panelSprite = null;
             }
 
             if (gridImage != null)
             {
-                Object.Destroy(gridImage);
+                UnityEngine.Object.Destroy(gridImage);
                 gridImage = null;
             }
 
+            CleanupBorder();
             panelRect = null;
             contentRect = null;
             containerView = null;
@@ -184,12 +180,41 @@ namespace StorageInfo
             panelObj.layer = uiLayer;
             panelObj.transform.SetParent(root.transform, false);
             panelRect = panelObj.AddComponent<RectTransform>();
-            panelRect.anchorMin = new Vector2(PanelAnchorX, PanelAnchorY);
-            panelRect.anchorMax = new Vector2(PanelAnchorX, PanelAnchorY);
+
+            // Apply anchor based on mod options
+            float anchorX = ModPlugin.options.PanelAnchor == AnchorPreset.Custom
+                ? ModPlugin.options.CustomAnchorX / 100f
+                : GetAnchorForPreset(ModPlugin.options.PanelAnchor);
+            float anchorY = ModPlugin.options.PanelAnchor == AnchorPreset.Custom
+                ? ModPlugin.options.CustomAnchorY / 100f
+                : GetAnchorForPreset(ModPlugin.options.PanelAnchor);
+
+            panelRect.anchorMin = new Vector2(anchorX, anchorY);
+            panelRect.anchorMax = new Vector2(anchorX, anchorY);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
 
             Image panelImage = panelObj.AddComponent<Image>();
             panelImage.raycastTarget = false;
+
+            // Add border for game UI integration (only if mod option enabled)
+            if (ModPlugin.options.UseGamePanelStyle)
+            {
+                GameObject borderObj = new GameObject("Border");
+                borderObj.layer = uiLayer;
+                borderObj.transform.SetParent(panelRect, false);
+                
+                RectTransform borderRect = borderObj.AddComponent<RectTransform>();
+                borderRect.anchorMin = Vector2.zero;
+                borderRect.anchorMax = Vector2.one;
+                borderRect.offsetMin = Vector2.zero;
+                borderRect.offsetMax = Vector2.zero;
+                borderRect.sizeDelta = panelRect.sizeDelta;
+                
+                // Add outline effect for border (cyan tint matching game UI)
+                Outline outline = borderObj.AddComponent<Outline>();
+                outline.effectDistance = new Vector2(1.5f, 1.5f);
+                outline.effectColor = new Color(0.05f, 0.3f, 0.6f, 0.8f);
+            }
 
             GameObject contentObj = new GameObject("Content");
             contentObj.layer = uiLayer;
@@ -244,6 +269,12 @@ namespace StorageInfo
                 gridImage.material = view.grid.material;
                 gridImage.color = view.grid.color;
                 
+                // Apply grid alpha from mod options
+                float gridAlpha = ModPlugin.options.GridAlpha / 100f;
+                Color newColor = view.grid.color;
+                newColor.a = Mathf.Clamp(newColor.a * gridAlpha, 0f, 1f);
+                gridImage.color = newColor;
+                
                 return;
             }
 
@@ -254,39 +285,93 @@ namespace StorageInfo
                 gridImage.material = container.grid.material;
                 gridImage.color = container.grid.color;
                 
+                // Apply grid alpha from mod options
+                float gridAlpha = ModPlugin.options.GridAlpha / 100f;
+                Color newColor = container.grid.color;
+                newColor.a = Mathf.Clamp(newColor.a * gridAlpha, 0f, 1f);
+                gridImage.color = newColor;
+                
                 return;
             }
         }
 
-        // Generate transparent grid overlay for panel background.
+        // Load texture from file path (PNG only for now)
+        private static Texture2D LoadTextureFromFile(string filePath)
+        {
+            if (!System.IO.File.Exists(filePath))
+                return null;
+
+            // For BepInEx plugins, we need to use Resources folder or AssetBundle
+            // Since we can't access Unity Resources directly, fall back to procedural grid
+            return null;
+        }
+
+        // Generate proper panel background for better UI integration.
         private static Sprite LoadPanelSprite()
         {
             if (panelSprite != null)
                 return panelSprite;
 
-            int gridSize = 32;
-            Texture2D texture = new Texture2D(gridSize, gridSize, TextureFormat.RGBA32, false);
-
-            for (int y = 0; y < gridSize; y++)
+            // Try to load from mod assets first - PDABackground.png
+            // Load from plugin DLL path since BepInEx doesn't have access to Unity Resources folder
+            string dllPath = AppDomain.CurrentDomain.BaseDirectory;
+            string texturePath = Path.Combine(dllPath, "Images", "PDABackground.png");
+            Texture2D texture = null;
+            
+            try
             {
-                for (int x = 0; x < gridSize; x++)
+                texture = LoadTextureFromFile(texturePath);
+            }
+            catch
+            {
+                // File not found or load failed, fall back to procedural grid
+            }
+            
+            if (texture == null)
+            {
+                int gridSize = 32;
+                texture = new Texture2D(gridSize, gridSize, TextureFormat.RGBA32, false);
+
+                for (int y = 0; y < gridSize; y++)
                 {
-                    float gridAlpha = 0.15f; // Dark translucent overlay
+                    for (int x = 0; x < gridSize; x++)
+                    {
+                        float gridAlpha = 0.25f; // Slightly more opaque than original
 
-                    if (x % 4 == 0 || y % 4 == 0)
-                        gridAlpha *= 2f;
+                        if (x % 4 == 0 || y % 4 == 0)
+                            gridAlpha *= 1.5f;
 
-                    texture.SetPixel(x, y, new Color(0f, 0f, 0f, Mathf.Clamp(gridAlpha, 0f, 1f)));
+                        texture.SetPixel(x, y, new Color(0f, 0f, 0f, Mathf.Clamp(gridAlpha, 0f, 1f)));
+                    }
                 }
+                texture.Apply();
             }
 
-            texture.Apply();
-            panelSprite = Sprite.Create(texture, new Rect(0f, 0f, gridSize, gridSize), new Vector2(0.5f, 0.5f));
+            // Create sprite with proper settings
+            panelSprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             
             return panelSprite;
         }
 
-        // Apply transparent grid overlay (no solid color border).
+        // Helper method to get anchor values based on preset
+        private static float GetAnchorForPreset(AnchorPreset preset)
+        {
+            switch (preset)
+            {
+                case AnchorPreset.TopLeft: return 0f;
+                case AnchorPreset.TopCenter: return 0.5f;
+                case AnchorPreset.TopRight: return 1f;
+                case AnchorPreset.CenterLeft: return 0f;
+                case AnchorPreset.Center: return 0.5f;
+                case AnchorPreset.CenterRight: return 1f;
+                case AnchorPreset.BottomLeft: return 0f;
+                case AnchorPreset.BottomCenter: return 0.5f;
+                case AnchorPreset.BottomRight: return 1f;
+                default: return 0.75f; // TopRight as default fallback
+            }
+        }
+
+        // Apply panel appearance with mod options support
         private static void ApplyPanelAppearance()
         {
             Image panelImage = panelRect.GetComponent<Image>();
@@ -300,6 +385,10 @@ namespace StorageInfo
             {
                 panelImage.sprite = bgSprite;
                 panelImage.type = Image.Type.Simple;
+                
+                // Apply opacity from mod options
+                float opacity = ModPlugin.options.UseGamePanelStyle ? ModPlugin.options.PanelOpacity : 1f;
+                panelImage.color = new Color(panelImage.color.r, panelImage.color.g, panelImage.color.b, opacity);
             }
         }
 
@@ -334,6 +423,18 @@ namespace StorageInfo
             panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
         }
 
+        private static void ApplyOffset()
+        {
+            RectTransform rootRect = root.GetComponent<RectTransform>();
+            if (rootRect == null || rootRect.parent == null)
+                return;
+
+            // Apply offset from mod options (percentage of panel size)
+            float offsetX = (ModPlugin.options.OffsetX / 100f) * panelRect.sizeDelta.x;
+            float offsetY = (ModPlugin.options.OffsetY / 100f) * panelRect.sizeDelta.y;
+            panelRect.anchoredPosition = new Vector2(offsetX, offsetY);
+        }
+
         private static void DisableIconRaycasts()
         {
             if (containerView == null)
@@ -356,7 +457,29 @@ namespace StorageInfo
                 containerView.Uninit();
             }
 
+            // Clean up border if it exists
+            if (borderRect != null)
+            {
+                if (borderRect.gameObject != null)
+                {
+                    UnityEngine.Object.Destroy(borderRect.gameObject);
+                }
+                borderRect = null;
+            }
+
             boundContainer = null;
+        }
+
+        private static void CleanupBorder()
+        {
+            if (borderRect != null)
+            {
+                if (borderRect.gameObject != null)
+                {
+                    UnityEngine.Object.Destroy(borderRect.gameObject);
+                }
+                borderRect = null;
+            }
         }
     }
 }

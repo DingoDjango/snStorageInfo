@@ -1,0 +1,1 @@
+.\llama-server.exe -hf unsloth/Qwen3.5-9B-GGUF:Q8_0 --jinja -ngl 999 -c 200000 -fa on -ctk q8_0 -ctv q8_0 -b 4096 -ub 2048 --spec-type ngram-mod --mlock --temp 0.7 --min-p 0.0 --top-p 0.80 --top-k 20 --repeat-penalty 1.05
