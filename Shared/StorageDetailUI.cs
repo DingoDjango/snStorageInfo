@@ -1,9 +1,10 @@
 using HarmonyLib;
+using Nautilus.Utility;
 using System;
 using System.IO;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.TextCore;
 
 namespace StorageInfo
 {
@@ -19,15 +20,27 @@ namespace StorageInfo
         // Must match vanilla uGUI_ItemsContainer cell size.
         private const int CellSize = 71;
 
+        // Fixed panel placement - 75% from left, vertical center, no offset.
+        private const float PanelAnchorX = 0.75f;
+        private const float PanelAnchorY = 0.5f;
+
+        // Panel styling - semi-transparent dark like game panels.
+        private const float PanelOpacity = 0.85f;
+
+        // Fixed 9-slice border for the PDA background sprite.
+        private const float NineSliceBorder = 32f;
+
         private static GameObject root;
         private static RectTransform panelRect;
         private static RectTransform contentRect;
-        private static RectTransform borderRect;
         private static uGUI_ItemsContainerView containerView;
         private static ItemsContainer boundContainer;
         private static bool built;
         private static Sprite panelSprite;
+        private static Texture2D panelTexture;
         private static RawImage gridImage;
+        // Owned only when the procedural fallback grid tile is used (vanilla grid texture is shared, never destroyed).
+        private static Texture2D gridTexture;
 
         public static void Show(ItemsContainer container)
         {
@@ -56,7 +69,6 @@ namespace StorageInfo
             }
 
             LayoutPanel(container);
-            ApplyOffset();
             root.transform.SetAsLastSibling();
             root.SetActive(true);
 
@@ -107,13 +119,19 @@ namespace StorageInfo
                 panelSprite = null;
             }
 
-            if (gridImage != null)
+            if (panelTexture != null)
             {
-                UnityEngine.Object.Destroy(gridImage);
-                gridImage = null;
+                UnityEngine.Object.Destroy(panelTexture);
+                panelTexture = null;
             }
 
-            CleanupBorder();
+            if (gridTexture != null)
+            {
+                UnityEngine.Object.Destroy(gridTexture);
+                gridTexture = null;
+            }
+
+            gridImage = null;
             panelRect = null;
             contentRect = null;
             containerView = null;
@@ -180,41 +198,13 @@ namespace StorageInfo
             panelObj.layer = uiLayer;
             panelObj.transform.SetParent(root.transform, false);
             panelRect = panelObj.AddComponent<RectTransform>();
-
-            // Apply anchor based on mod options
-            float anchorX = ModPlugin.options.PanelAnchor == AnchorPreset.Custom
-                ? ModPlugin.options.CustomAnchorX / 100f
-                : GetAnchorForPreset(ModPlugin.options.PanelAnchor);
-            float anchorY = ModPlugin.options.PanelAnchor == AnchorPreset.Custom
-                ? ModPlugin.options.CustomAnchorY / 100f
-                : GetAnchorForPreset(ModPlugin.options.PanelAnchor);
-
-            panelRect.anchorMin = new Vector2(anchorX, anchorY);
-            panelRect.anchorMax = new Vector2(anchorX, anchorY);
+            panelRect.anchorMin = new Vector2(PanelAnchorX, PanelAnchorY);
+            panelRect.anchorMax = new Vector2(PanelAnchorX, PanelAnchorY);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.anchoredPosition = Vector2.zero;
 
             Image panelImage = panelObj.AddComponent<Image>();
             panelImage.raycastTarget = false;
-
-            // Add border for game UI integration (only if mod option enabled)
-            if (ModPlugin.options.UseGamePanelStyle)
-            {
-                GameObject borderObj = new GameObject("Border");
-                borderObj.layer = uiLayer;
-                borderObj.transform.SetParent(panelRect, false);
-                
-                RectTransform borderRect = borderObj.AddComponent<RectTransform>();
-                borderRect.anchorMin = Vector2.zero;
-                borderRect.anchorMax = Vector2.one;
-                borderRect.offsetMin = Vector2.zero;
-                borderRect.offsetMax = Vector2.zero;
-                borderRect.sizeDelta = panelRect.sizeDelta;
-                
-                // Add outline effect for border (cyan tint matching game UI)
-                Outline outline = borderObj.AddComponent<Outline>();
-                outline.effectDistance = new Vector2(1.5f, 1.5f);
-                outline.effectColor = new Color(0.05f, 0.3f, 0.6f, 0.8f);
-            }
 
             GameObject contentObj = new GameObject("Content");
             contentObj.layer = uiLayer;
@@ -245,7 +235,7 @@ namespace StorageInfo
             gridRect.offsetMin = Vector2.zero;
             gridRect.offsetMax = Vector2.zero;
 
-            RawImage gridImage = gridObj.AddComponent<RawImage>();
+            gridImage = gridObj.AddComponent<RawImage>();
             gridImage.raycastTarget = false;
             // Set initial uvRect so grid tiles correctly once texture is assigned
             gridImage.uvRect = new Rect(0f, 0f, 1f, 1f);
@@ -260,118 +250,184 @@ namespace StorageInfo
             return true;
         }
 
+        // Copies the vanilla container grid texture/material/color unchanged.
+        // Falls back to a procedural 1-cell tile when no vanilla container is present.
         private static void ApplyGridAppearance()
         {
-            uGUI_ItemsContainerView view = uGUI.main.GetComponentInChildren<uGUI_ItemsContainerView>(true);
-            if (view != null && view.grid != null)
+            Texture sourceTexture = null;
+            Material sourceMaterial = null;
+            Color sourceColor = Color.white;
+
+            // Exclude our own preview view - it would copy its own texture back.
+            uGUI_ItemsContainerView[] views = uGUI.main.GetComponentsInChildren<uGUI_ItemsContainerView>(true);
+            for (int i = 0; i < views.Length; i++)
             {
-                gridImage.texture = view.grid.texture;
-                gridImage.material = view.grid.material;
-                gridImage.color = view.grid.color;
-                
-                // Apply grid alpha from mod options
-                float gridAlpha = ModPlugin.options.GridAlpha / 100f;
-                Color newColor = view.grid.color;
-                newColor.a = Mathf.Clamp(newColor.a * gridAlpha, 0f, 1f);
-                gridImage.color = newColor;
-                
-                return;
+                if (views[i] == containerView || views[i].grid == gridImage)
+                {
+                    continue;
+                }
+                if (views[i].grid != null)
+                {
+                    sourceTexture = views[i].grid.texture;
+                    sourceMaterial = views[i].grid.material;
+                    sourceColor = views[i].grid.color;
+                    break;
+                }
             }
 
-            uGUI_ItemsContainer container = uGUI.main.GetComponentInChildren<uGUI_ItemsContainer>(true);
-            if (container != null && container.grid != null)
+            if (sourceTexture == null)
             {
-                gridImage.texture = container.grid.texture;
-                gridImage.material = container.grid.material;
-                gridImage.color = container.grid.color;
-                
-                // Apply grid alpha from mod options
-                float gridAlpha = ModPlugin.options.GridAlpha / 100f;
-                Color newColor = container.grid.color;
-                newColor.a = Mathf.Clamp(newColor.a * gridAlpha, 0f, 1f);
-                gridImage.color = newColor;
-                
-                return;
+                uGUI_ItemsContainer container = uGUI.main.GetComponentInChildren<uGUI_ItemsContainer>(true);
+                if (container != null && container.grid != null)
+                {
+                    sourceTexture = container.grid.texture;
+                    sourceMaterial = container.grid.material;
+                    sourceColor = container.grid.color;
+                }
             }
+
+            if (sourceTexture is Texture2D sourceTex2D)
+            {
+                // Vanilla texture is a shared asset - copy reference, never destroy.
+                SetGridTexture(sourceTex2D, false);
+            }
+            else if (sourceTexture != null)
+            {
+                gridImage.texture = sourceTexture;
+            }
+            else
+            {
+                // Procedural fallback: 1-cell tile with border on cell edges.
+                if (gridTexture == null)
+                {
+                    gridTexture = CreateGridTile(CellSize);
+                }
+                SetGridTexture(gridTexture, true);
+                sourceMaterial = null;
+                sourceColor = Color.white;
+            }
+
+            gridImage.material = sourceMaterial;
+            gridImage.color = sourceColor;
         }
 
-        // Load texture from file path (PNG only for now)
-        private static Texture2D LoadTextureFromFile(string filePath)
+        private static void SetGridTexture(Texture2D texture, bool owned)
         {
-            if (!System.IO.File.Exists(filePath))
-                return null;
+            if (gridImage == null)
+            {
+                return;
+            }
 
-            // For BepInEx plugins, we need to use Resources folder or AssetBundle
-            // Since we can't access Unity Resources directly, fall back to procedural grid
-            return null;
+            // Release previous owned fallback tile before swapping references.
+            if (gridTexture != null && gridTexture != texture)
+            {
+                UnityEngine.Object.Destroy(gridTexture);
+                gridTexture = null;
+            }
+
+            gridImage.texture = texture;
+
+            if (owned)
+            {
+                gridTexture = texture;
+            }
         }
 
-        // Generate proper panel background for better UI integration.
+        // 1-cell tile: 1px border on right+bottom edges, tiled once per cell via uvRect.
+        // Shared edges draw exactly once (no doubled lines), aligned to cell boundaries.
+        private static Texture2D CreateGridTile(int size)
+        {
+            Texture2D tile = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tile.wrapMode = TextureWrapMode.Repeat;
+            tile.filterMode = FilterMode.Bilinear;
+
+            Color clear = new Color(0f, 0f, 0f, 0f);
+            Color line = new Color(0f, 0f, 0f, 0.15f);
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    bool edge = x == size - 1 || y == size - 1;
+                    tile.SetPixel(x, y, edge ? line : clear);
+                }
+            }
+
+            tile.Apply();
+            return tile;
+        }
+
+        // Proper panel background for game UI integration.
+        // Tries PDABackground.png from plugin assets, falls back to procedural texture.
         private static Sprite LoadPanelSprite()
         {
             if (panelSprite != null)
+            {
                 return panelSprite;
-
-            // Try to load from mod assets first - PDABackground.png
-            // Load from plugin DLL path since BepInEx doesn't have access to Unity Resources folder
-            string dllPath = AppDomain.CurrentDomain.BaseDirectory;
-            string texturePath = Path.Combine(dllPath, "Images", "PDABackground.png");
-            Texture2D texture = null;
-            
-            try
-            {
-                texture = LoadTextureFromFile(texturePath);
-            }
-            catch
-            {
-                // File not found or load failed, fall back to procedural grid
-            }
-            
-            if (texture == null)
-            {
-                int gridSize = 32;
-                texture = new Texture2D(gridSize, gridSize, TextureFormat.RGBA32, false);
-
-                for (int y = 0; y < gridSize; y++)
-                {
-                    for (int x = 0; x < gridSize; x++)
-                    {
-                        float gridAlpha = 0.25f; // Slightly more opaque than original
-
-                        if (x % 4 == 0 || y % 4 == 0)
-                            gridAlpha *= 1.5f;
-
-                        texture.SetPixel(x, y, new Color(0f, 0f, 0f, Mathf.Clamp(gridAlpha, 0f, 1f)));
-                    }
-                }
-                texture.Apply();
             }
 
-            // Create sprite with proper settings
-            panelSprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-            
+            panelTexture = LoadPdaBackgroundTexture();
+
+            if (panelTexture == null)
+            {
+                panelTexture = CreateProceduralPanelTexture();
+            }
+
+            // 9-slice border so corners stay crisp at any panel size.
+            float border = Mathf.Min(NineSliceBorder, panelTexture.width / 4f, panelTexture.height / 4f);
+
+            panelSprite = Sprite.Create(
+                panelTexture,
+                new Rect(0f, 0f, panelTexture.width, panelTexture.height),
+                new Vector2(0.5f, 0.5f),
+                100f,
+                0,
+                SpriteMeshType.FullRect,
+                new Vector4(border, border, border, border));
+
             return panelSprite;
         }
 
-        // Helper method to get anchor values based on preset
-        private static float GetAnchorForPreset(AnchorPreset preset)
+        private static Texture2D LoadPdaBackgroundTexture()
         {
-            switch (preset)
+            try
             {
-                case AnchorPreset.TopLeft: return 0f;
-                case AnchorPreset.TopCenter: return 0.5f;
-                case AnchorPreset.TopRight: return 1f;
-                case AnchorPreset.CenterLeft: return 0f;
-                case AnchorPreset.Center: return 0.5f;
-                case AnchorPreset.CenterRight: return 1f;
-                case AnchorPreset.BottomLeft: return 0f;
-                case AnchorPreset.BottomCenter: return 0.5f;
-                case AnchorPreset.BottomRight: return 1f;
-                default: return 0.75f; // TopRight as default fallback
+                string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
+                string texturePath = Path.Combine(pluginDir, "Images", "PDABackground.png");
+                return ImageUtils.LoadTextureFromFile(texturePath, TextureFormat.RGBA32);
+            }
+            catch (Exception e)
+            {
+                ModPlugin.LogMessage("Failed to load PDABackground.png: " + e.Message);
+                return null;
             }
         }
 
-        // Apply panel appearance with mod options support
+        // Procedural fallback: dark translucent grid texture.
+        private static Texture2D CreateProceduralPanelTexture()
+        {
+            const int gridSize = 32;
+            Texture2D texture = new Texture2D(gridSize, gridSize, TextureFormat.RGBA32, false);
+
+            for (int y = 0; y < gridSize; y++)
+            {
+                for (int x = 0; x < gridSize; x++)
+                {
+                    float gridAlpha = 0.25f;
+
+                    if (x % 4 == 0 || y % 4 == 0)
+                    {
+                        gridAlpha *= 1.5f;
+                    }
+
+                    texture.SetPixel(x, y, new Color(0f, 0f, 0f, Mathf.Clamp(gridAlpha, 0f, 1f)));
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
         private static void ApplyPanelAppearance()
         {
             Image panelImage = panelRect.GetComponent<Image>();
@@ -384,11 +440,8 @@ namespace StorageInfo
             if (bgSprite != null)
             {
                 panelImage.sprite = bgSprite;
-                panelImage.type = Image.Type.Simple;
-                
-                // Apply opacity from mod options
-                float opacity = ModPlugin.options.UseGamePanelStyle ? ModPlugin.options.PanelOpacity : 1f;
-                panelImage.color = new Color(panelImage.color.r, panelImage.color.g, panelImage.color.b, opacity);
+                panelImage.type = Image.Type.Sliced;
+                panelImage.color = new Color(1f, 1f, 1f, PanelOpacity);
             }
         }
 
@@ -417,22 +470,10 @@ namespace StorageInfo
             float scale = Mathf.Min(1f, MaxPreviewWidth / gridWidth, MaxPreviewHeight / gridHeight);
 
             contentRect.localScale = new Vector3(scale, scale, 1f);
-            
+
             float panelWidth = gridWidth * scale + PanelPadding * 2f;
             float panelHeight = gridHeight * scale + PanelPadding * 2f;
             panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
-        }
-
-        private static void ApplyOffset()
-        {
-            RectTransform rootRect = root.GetComponent<RectTransform>();
-            if (rootRect == null || rootRect.parent == null)
-                return;
-
-            // Apply offset from mod options (percentage of panel size)
-            float offsetX = (ModPlugin.options.OffsetX / 100f) * panelRect.sizeDelta.x;
-            float offsetY = (ModPlugin.options.OffsetY / 100f) * panelRect.sizeDelta.y;
-            panelRect.anchoredPosition = new Vector2(offsetX, offsetY);
         }
 
         private static void DisableIconRaycasts()
@@ -457,29 +498,7 @@ namespace StorageInfo
                 containerView.Uninit();
             }
 
-            // Clean up border if it exists
-            if (borderRect != null)
-            {
-                if (borderRect.gameObject != null)
-                {
-                    UnityEngine.Object.Destroy(borderRect.gameObject);
-                }
-                borderRect = null;
-            }
-
             boundContainer = null;
-        }
-
-        private static void CleanupBorder()
-        {
-            if (borderRect != null)
-            {
-                if (borderRect.gameObject != null)
-                {
-                    UnityEngine.Object.Destroy(borderRect.gameObject);
-                }
-                borderRect = null;
-            }
         }
     }
 }
