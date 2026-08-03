@@ -14,8 +14,15 @@ namespace StorageInfo
         private const float MaxPreviewWidth = 320f;
         private const float MaxPreviewHeight = 400f;
 
-        // Space between panel border and grid content.
-        private const float PanelPadding = 10f;
+        // Background border padding: space between texture edge and grid.
+        // Left is thicker (PDABackground_Mod asymmetric frame).
+        private const float PadLeft   = 15f;
+        private const float PadRight  =  5f;
+        private const float PadTop    = 15f;
+        private const float PadBottom =  5f;
+
+        // Panel background texture file.
+        private const string BackgroundTextureFile = "PDABackground_Mod.png";
 
         // Must match vanilla uGUI_ItemsContainer cell size.
         private const int CellSize = 71;
@@ -38,6 +45,8 @@ namespace StorageInfo
         private static RawImage gridImage;
         // Owned only when the procedural fallback grid tile is used (vanilla grid texture is shared, never destroyed).
         private static Texture2D gridTexture;
+        // Extra dark overlay above the background, below the grid. Optional via mod option.
+        private static Image backgroundOverlay;
 
         public static void Show(ItemsContainer container)
         {
@@ -131,6 +140,7 @@ namespace StorageInfo
             }
 
             gridImage = null;
+            backgroundOverlay = null;
             panelRect = null;
             contentRect = null;
             containerView = null;
@@ -205,6 +215,20 @@ namespace StorageInfo
             Image panelImage = panelObj.AddComponent<Image>();
             panelImage.raycastTarget = false;
 
+            // Extra dark overlay: sits between background and grid, darkens grid area when option enabled.
+            GameObject overlayObj = new GameObject("BackgroundOverlay");
+            overlayObj.layer = uiLayer;
+            overlayObj.transform.SetParent(panelRect, false);
+            backgroundOverlay = overlayObj.AddComponent<Image>();
+            backgroundOverlay.raycastTarget = false;
+            backgroundOverlay.color = new Color(0f, 0f, 0f, 0.35f);
+            RectTransform overlayRect = backgroundOverlay.rectTransform;
+            overlayRect.anchorMin = Vector2.zero;
+            overlayRect.anchorMax = Vector2.one;
+            overlayRect.offsetMin = Vector2.zero;
+            overlayRect.offsetMax = Vector2.zero;
+            backgroundOverlay.enabled = false;
+
             GameObject contentObj = new GameObject("Content");
             contentObj.layer = uiLayer;
             contentObj.transform.SetParent(panelRect, false);
@@ -212,7 +236,8 @@ namespace StorageInfo
             contentRect.anchorMin = new Vector2(0f, 1f);
             contentRect.anchorMax = new Vector2(0f, 1f);
             contentRect.pivot = new Vector2(0f, 1f);
-            contentRect.anchoredPosition = new Vector2(PanelPadding, -PanelPadding);
+            contentRect.anchoredPosition = Vector2.zero;
+            contentRect.anchoredPosition = Vector2.zero;
 
             GameObject viewObj = new GameObject("ItemsView");
             viewObj.layer = uiLayer;
@@ -356,9 +381,6 @@ namespace StorageInfo
             return tile;
         }
 
-        // Proper panel background for game UI integration.
-        // Tries PDABackground.png from plugin assets, falls back to procedural texture.
-        // Simple type - PDABackground already has its own border/corners baked in.
         private static Sprite LoadPanelSprite()
         {
             if (panelSprite != null)
@@ -366,7 +388,7 @@ namespace StorageInfo
                 return panelSprite;
             }
 
-            panelTexture = LoadPdaBackgroundTexture();
+            panelTexture = LoadPanelTexture();
 
             if (panelTexture == null)
             {
@@ -382,17 +404,17 @@ namespace StorageInfo
             return panelSprite;
         }
 
-        private static Texture2D LoadPdaBackgroundTexture()
+        private static Texture2D LoadPanelTexture()
         {
             try
             {
                 string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
-                string texturePath = Path.Combine(pluginDir, "Images", "PDABackground_Mod.png");
+                string texturePath = Path.Combine(pluginDir, "Images", BackgroundTextureFile);
                 return ImageUtils.LoadTextureFromFile(texturePath, TextureFormat.RGBA32);
             }
             catch (Exception e)
             {
-                ModPlugin.LogMessage("Failed to load PDABackground.png: " + e.Message);
+                ModPlugin.LogMessage("Failed to load " + BackgroundTextureFile + ": " + e.Message);
                 return null;
             }
         }
@@ -430,22 +452,21 @@ namespace StorageInfo
                 return;
             }
 
-            bool backgroundEnabled = ModPlugin.options.Background == PreviewBackground.Enabled;
-
-            if (!backgroundEnabled)
-            {
-                panelImage.enabled = false;
-                panelImage.sprite = null;
-                return;
-            }
-
+            // Panel background always rendered.
             Sprite bgSprite = LoadPanelSprite();
+
             if (bgSprite != null)
             {
                 panelImage.enabled = true;
                 panelImage.sprite = bgSprite;
                 panelImage.type = Image.Type.Simple;
                 panelImage.color = new Color(1f, 1f, 1f, PanelOpacity);
+            }
+
+            // Extra dark overlay - only when option enabled.
+            if (backgroundOverlay != null)
+            {
+                backgroundOverlay.enabled = ModPlugin.options.Background == PreviewBackground.Enabled;
             }
         }
 
@@ -475,8 +496,10 @@ namespace StorageInfo
 
             contentRect.localScale = new Vector3(scale, scale, 1f);
 
-            float panelWidth = gridWidth * scale + PanelPadding * 2f;
-            float panelHeight = gridHeight * scale + PanelPadding * 2f;
+            contentRect.anchoredPosition = new Vector2(PadLeft, -PadTop);
+
+            float panelWidth  = gridWidth  * scale + PadLeft + PadRight;
+            float panelHeight = gridHeight * scale + PadTop  + PadBottom;
             panelRect.sizeDelta = new Vector2(panelWidth, panelHeight);
         }
 

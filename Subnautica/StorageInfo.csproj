@@ -128,15 +128,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Shared\Localization\*.json">
+    <None Include="..\Shared\Localization\*.*">
       <Link>Localization\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Shared\Images\*.png">
+    <None Include="..\Shared\Images\*.*">
       <Link>Images\%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
