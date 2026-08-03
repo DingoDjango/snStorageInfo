@@ -125,11 +125,14 @@
 	<Target Name="BeforeBuild">
 	</Target> -->
   <PropertyGroup>
-    <PostBuildEvent>SET MODDIR=C:\Games\Subnautica - Below Zero\BepInEx\
-SET ZIPFILE=E:\Downloads\$(ProjectName).zip
+    <PostBuildEvent>cd /d "$(ProjectDir)"
+SET MODDIR=C:\Games\Subnautica - Below Zero\BepInEx\
+SET ZIPFILE=..\ZIP\BelowZero\$(ProjectName).zip
+
+if not exist "$(ProjectDir)..\ZIP" mkdir "$(ProjectDir)..\ZIP"
 
 xcopy "$(ProjectDir)BepInEx\*" "%25MODDIR%25" /i /e /r /y
 
-"C:\Program Files\7-Zip\7z.exe" a -mx9 "%25ZIPFILE%25" "$(ProjectDir)BepInEx"</PostBuildEvent>
+"C:\Program Files\7-Zip\7z.exe" a -mx9 "%25ZIPFILE%25" "BepInEx\plugins\StorageInfo_BZ"</PostBuildEvent>
   </PropertyGroup>
 </Project>

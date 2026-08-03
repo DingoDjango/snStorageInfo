@@ -11,10 +11,19 @@ namespace StorageInfo
         DisplayModeDetailedList
     }
 
+    public enum PreviewBackground
+    {
+        None,
+        Enabled
+    }
+
     [Menu("Storage Info")]
     public class StorageInfoOptions : ConfigFile
     {
         [Choice]
         public DisplayMode DisplayMode = DisplayMode.DisplayModeDefault;
+
+        [Choice]
+        public PreviewBackground Background = PreviewBackground.None;
     }
 }

@@ -27,9 +27,6 @@ namespace StorageInfo
         // Panel styling - semi-transparent dark like game panels.
         private const float PanelOpacity = 0.85f;
 
-        // Fixed 9-slice border for the PDA background sprite.
-        private const float NineSliceBorder = 32f;
-
         private static GameObject root;
         private static RectTransform panelRect;
         private static RectTransform contentRect;
@@ -65,8 +62,10 @@ namespace StorageInfo
                 boundContainer = container;
 
                 ApplyGridAppearance();
-                ApplyPanelAppearance();
             }
+
+            // Reapply every Show so mod option changes take effect on next hover.
+            ApplyPanelAppearance();
 
             LayoutPanel(container);
             root.transform.SetAsLastSibling();
@@ -359,6 +358,7 @@ namespace StorageInfo
 
         // Proper panel background for game UI integration.
         // Tries PDABackground.png from plugin assets, falls back to procedural texture.
+        // Simple type - PDABackground already has its own border/corners baked in.
         private static Sprite LoadPanelSprite()
         {
             if (panelSprite != null)
@@ -373,17 +373,11 @@ namespace StorageInfo
                 panelTexture = CreateProceduralPanelTexture();
             }
 
-            // 9-slice border so corners stay crisp at any panel size.
-            float border = Mathf.Min(NineSliceBorder, panelTexture.width / 4f, panelTexture.height / 4f);
-
             panelSprite = Sprite.Create(
                 panelTexture,
                 new Rect(0f, 0f, panelTexture.width, panelTexture.height),
                 new Vector2(0.5f, 0.5f),
-                100f,
-                0,
-                SpriteMeshType.FullRect,
-                new Vector4(border, border, border, border));
+                100f);
 
             return panelSprite;
         }
@@ -393,7 +387,7 @@ namespace StorageInfo
             try
             {
                 string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
-                string texturePath = Path.Combine(pluginDir, "Images", "PDABackground.png");
+                string texturePath = Path.Combine(pluginDir, "Images", "PDABackground_Mod.png");
                 return ImageUtils.LoadTextureFromFile(texturePath, TextureFormat.RGBA32);
             }
             catch (Exception e)
@@ -436,11 +430,21 @@ namespace StorageInfo
                 return;
             }
 
+            bool backgroundEnabled = ModPlugin.options.Background == PreviewBackground.Enabled;
+
+            if (!backgroundEnabled)
+            {
+                panelImage.enabled = false;
+                panelImage.sprite = null;
+                return;
+            }
+
             Sprite bgSprite = LoadPanelSprite();
             if (bgSprite != null)
             {
+                panelImage.enabled = true;
                 panelImage.sprite = bgSprite;
-                panelImage.type = Image.Type.Sliced;
+                panelImage.type = Image.Type.Simple;
                 panelImage.color = new Color(1f, 1f, 1f, PanelOpacity);
             }
         }

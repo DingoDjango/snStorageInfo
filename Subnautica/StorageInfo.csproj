@@ -141,12 +141,15 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>SET MODDIR=C:\Program Files (x86)\Steam\steamapps\common\Subnautica\BepInEx\
-SET ZIPFILE=..\Zip\$(ProjectName).zip
+    <PostBuildEvent>cd /d "$(ProjectDir)"
+SET MODDIR=C:\Program Files (x86)\Steam\steamapps\common\Subnautica\BepInEx\
+SET ZIPFILE=..\ZIP\Subnautica\$(ProjectName).zip
 
-xcopy "$(ProjectDir)BepInEx\*" "%25MODDIR%25" /i /e /r /y
+if not exist "..\ZIP" mkdir "..\ZIP"
 
-"C:\Program Files\7-Zip\7z.exe" a -mx9 "%25ZIPFILE%25" "$(ProjectDir)BepInEx"</PostBuildEvent>
+xcopy "$(ProjectDir)BepInEx\plugins\StorageInfo\*" "%25MODDIR%25plugins\StorageInfo\" /i /e /r /y
+
+"C:\Program Files\7-Zip\7z.exe" a -mx9 "%25ZIPFILE%25" "BepInEx\plugins\StorageInfo"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Microsoft.Common.targets.
