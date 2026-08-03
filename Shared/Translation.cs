@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
 
 namespace StorageInfo
 {
     internal static class Translation
     {
+        // Log each missing key only once to avoid log spam (checked every hover frame).
+        private static readonly HashSet<string> LoggedMissingKeys = new HashSet<string>();
+
         internal static string Translate(this string source)
         {
             if (Language.main.TryGet(source, out string translated))
@@ -11,7 +15,7 @@ namespace StorageInfo
                 return translated;
             }
 
-            ModPlugin.LogMessage($"Could not find translated string for `{source}`");
+            LogMissingKey(source);
 
             return source;
         }
@@ -59,6 +63,14 @@ namespace StorageInfo
                 ModPlugin.LogMessage(ex.ToString());
                 ModPlugin.LogMessage($"Failed to format '{source}'");
                 return null;
+            }
+        }
+
+        private static void LogMissingKey(string source)
+        {
+            if (LoggedMissingKeys.Add(source))
+            {
+                ModPlugin.LogMessage($"Could not find translated string for `{source}`");
             }
         }
     }

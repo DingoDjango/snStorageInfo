@@ -5,6 +5,8 @@
   "ContainerNonempty": "{0} objetos (No lleno)",
   "ContainerOneItemSlotsFree": "1 objeto, {0} ranuras libres",
   "ContainerNonemptySlotsFree": "{0} objetos, {1} ranuras libres",
+  "ContainerOneItemOneSlotFree": "1 objeto, 1 ranura libre",
+  "ContainerNonemptyOneSlotFree": "{0} objetos, 1 ranura libre",
   "SlotsOccupied": "ocupado",
   "DisplayMode": "Modo de visualización",
   "DisplayModeDefault": "Por defecto",

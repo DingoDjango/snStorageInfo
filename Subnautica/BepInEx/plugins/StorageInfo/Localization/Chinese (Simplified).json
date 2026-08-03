@@ -5,6 +5,8 @@
   "ContainerNonempty": "{0} 物品 (未满)",
   "ContainerOneItemSlotsFree": "1 物品, {0} 空余槽位",
   "ContainerNonemptySlotsFree": "{0} 物品, {1} 空余槽位",
+  "ContainerOneItemOneSlotFree": "1 物品, 1 空余槽位",
+  "ContainerNonemptyOneSlotFree": "{0} 物品, 1 空余槽位",
   "SlotsOccupied": "已占用",
   "DisplayMode": "显示模式",
   "DisplayModeDefault": "默认",

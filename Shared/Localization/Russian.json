@@ -5,6 +5,8 @@
   "ContainerNonempty": "Заполнено {0} предметами",
   "ContainerOneItemSlotsFree": "1 предмет, {0} слотов свободно",
   "ContainerNonemptySlotsFree": "Предметов: {0}, слотов свободно: {1}",
+  "ContainerOneItemOneSlotFree": "1 предмет, 1 слот свободен",
+  "ContainerNonemptyOneSlotFree": "Предметов: {0}, 1 слот свободен",
   "SlotsOccupied": "занято",
   "DisplayMode": "Режим отображения",
   "DisplayModeDefault": "По умолчанию",

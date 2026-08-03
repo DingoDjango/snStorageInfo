@@ -5,6 +5,8 @@
   "ContainerNonempty": "{0} items (not full)",
   "ContainerOneItemSlotsFree": "1 item, {0} slots free",
   "ContainerNonemptySlotsFree": "{0} items, {1} slots free",
+  "ContainerOneItemOneSlotFree": "1 item, 1 slot free",
+  "ContainerNonemptyOneSlotFree": "{0} items, 1 slot free",
   "SlotsOccupied": "occupied",
   "DisplayMode": "Display mode",
   "DisplayModeDefault": "Default",

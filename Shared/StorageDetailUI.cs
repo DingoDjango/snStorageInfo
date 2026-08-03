@@ -80,8 +80,9 @@ namespace StorageInfo
             root.transform.SetAsLastSibling();
             root.SetActive(true);
 
+            // CanvasGroup.blocksRaycasts=false already blocks all raycasts on this
+            // subtree; icon raycasts are disabled once per bind in Show().
             containerView.DoUpdate();
-            DisableIconRaycasts();
         }
 
         public static void Tick(ItemsContainer container)
@@ -97,8 +98,9 @@ namespace StorageInfo
                 return;
             }
 
+            // Vanilla per-frame bar update (batteries, food decay, etc.).
+            // No per-frame DisableIconRaycasts: the CanvasGroup already blocks raycasts.
             containerView.DoUpdate();
-            DisableIconRaycasts();
         }
 
         public static void Hide()
@@ -236,7 +238,6 @@ namespace StorageInfo
             contentRect.anchorMin = new Vector2(0f, 1f);
             contentRect.anchorMax = new Vector2(0f, 1f);
             contentRect.pivot = new Vector2(0f, 1f);
-            contentRect.anchoredPosition = Vector2.zero;
             contentRect.anchoredPosition = Vector2.zero;
 
             GameObject viewObj = new GameObject("ItemsView");
@@ -395,11 +396,8 @@ namespace StorageInfo
                 panelTexture = CreateProceduralPanelTexture();
             }
 
-            panelSprite = Sprite.Create(
-                panelTexture,
-                new Rect(0f, 0f, panelTexture.width, panelTexture.height),
-                new Vector2(0.5f, 0.5f),
-                100f);
+            // Deferred to Nautilus (equivalent to Sprite.Create with 100f pixelsPerUnit).
+            panelSprite = ImageUtils.LoadSpriteFromTexture(panelTexture);
 
             return panelSprite;
         }

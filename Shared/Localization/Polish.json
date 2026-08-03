@@ -5,6 +5,8 @@
   "ContainerNonempty": "{0} przedmioty/ów (nie pełne)",
   "ContainerOneItemSlotsFree": "1 przedmiot, {0} wolnych slotów",
   "ContainerNonemptySlotsFree": "{0} przedmioty/ów, {1} wolnych slotów",
+  "ContainerOneItemOneSlotFree": "1 przedmiot, 1 wolny slot",
+  "ContainerNonemptyOneSlotFree": "{0} przedmiotów, 1 wolny slot",
   "SlotsOccupied": "zajęte",
   "DisplayMode": "Tryb wyświetlania",
   "DisplayModeDefault": "Domyślny",

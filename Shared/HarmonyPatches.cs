@@ -6,9 +6,18 @@ namespace StorageInfo
 {
     public class HarmonyPatches
     {
-        public static StorageContainer hoveredStorage;
+        private static StorageContainer hoveredStorage;
 
-            private static void Patch_OnHandHover_Postfix(StorageContainer __instance)
+        // Reticle text dirty-flag: vanilla StorageContainer.OnHandHover fires every frame,
+        // so the full container slot scan would otherwise run per frame while hovering.
+        private static ItemsContainer subscribedContainer;
+        private static bool textDirty = true;
+        private static DisplayMode lastAppliedMode;
+
+        // Only re-validate the hover target when the active target object changes.
+        private static GameObject lastValidatedTarget;
+
+        private static void Patch_OnHandHover_Postfix(StorageContainer __instance)
         {
             if (__instance == null || __instance.container == null)
             {
@@ -16,12 +25,14 @@ namespace StorageInfo
             }
 
             hoveredStorage = __instance;
+            SubscribeToContainer(__instance.container);
             SetCustomInteractText(__instance.container);
         }
 
         private static void Patch_OnHandClick_Prefix(StorageContainer __instance)
         {
             hoveredStorage = null;
+            UnsubscribeFromContainer();
             StorageDetailUI.Hide();
         }
 
@@ -35,17 +46,24 @@ namespace StorageInfo
             if (Player.main == null || Player.main.guiHand == null)
             {
                 hoveredStorage = null;
+                UnsubscribeFromContainer();
                 StorageDetailUI.Hide();
                 return;
             }
 
             GameObject activeTarget = Player.main.guiHand.GetActiveTarget();
 
-            if (!IsHoveringStorage(hoveredStorage, activeTarget))
+            if (activeTarget != lastValidatedTarget)
             {
-                hoveredStorage = null;
-                StorageDetailUI.Hide();
-                return;
+                lastValidatedTarget = activeTarget;
+
+                if (!IsHoveringStorage(hoveredStorage, activeTarget))
+                {
+                    hoveredStorage = null;
+                    UnsubscribeFromContainer();
+                    StorageDetailUI.Hide();
+                    return;
+                }
             }
 
             if (ModPlugin.options.DisplayMode == DisplayMode.DisplayModeDetailedList && hoveredStorage.container != null)
@@ -77,6 +95,14 @@ namespace StorageInfo
 
         public static void SetCustomInteractText(ItemsContainer itemStorage)
         {
+            if (!textDirty && ModPlugin.options.DisplayMode == lastAppliedMode)
+            {
+                return;
+            }
+
+            textDirty = false;
+            lastAppliedMode = ModPlugin.options.DisplayMode;
+
             string customSubscriptText = string.Empty;
 
             if (itemStorage == null)
@@ -120,11 +146,15 @@ namespace StorageInfo
 
             if (itemStorage.count == 1)
             {
-                string text = "ContainerOneItemSlotsFree".TryFormatTranslate(freeSlots);
+                string text = freeSlots == 1
+                    ? "ContainerOneItemOneSlotFree".TryFormatTranslate()
+                    : "ContainerOneItemSlotsFree".TryFormatTranslate(freeSlots);
                 return text ?? "ContainerOneItem".Translate();
             }
 
-            string text2 = "ContainerNonemptySlotsFree".TryFormatTranslate(itemStorage.count, freeSlots);
+            string text2 = freeSlots == 1
+                ? "ContainerNonemptyOneSlotFree".TryFormatTranslate(itemStorage.count)
+                : "ContainerNonemptySlotsFree".TryFormatTranslate(itemStorage.count, freeSlots);
             return text2 ?? "ContainerNonempty".FormatTranslate(itemStorage.count);
         }
 
@@ -144,6 +174,56 @@ namespace StorageInfo
 
             StorageContainer targetStorage = target.GetComponentInParent<StorageContainer>();
             return targetStorage == storage;
+        }
+
+        // --- Reticle text dirty-flag via vanilla ItemsContainer events ---
+
+        private static void SubscribeToContainer(ItemsContainer container)
+        {
+            if (subscribedContainer == container)
+            {
+                return;
+            }
+
+            UnsubscribeFromContainer();
+
+            subscribedContainer = container;
+
+            if (container == null)
+            {
+                return;
+            }
+
+            container.onAddItem += OnContainerChanged;
+            container.onRemoveItem += OnContainerChanged;
+            container.onChangeItemPosition += OnContainerChanged;
+            container.onResize += OnContainerResized;
+            textDirty = true;
+        }
+
+        private static void UnsubscribeFromContainer()
+        {
+            if (subscribedContainer == null)
+            {
+                return;
+            }
+
+            subscribedContainer.onAddItem -= OnContainerChanged;
+            subscribedContainer.onRemoveItem -= OnContainerChanged;
+            subscribedContainer.onChangeItemPosition -= OnContainerChanged;
+            subscribedContainer.onResize -= OnContainerResized;
+            subscribedContainer = null;
+            textDirty = true;
+        }
+
+        private static void OnContainerChanged(InventoryItem item)
+        {
+            textDirty = true;
+        }
+
+        private static void OnContainerResized(int width, int height)
+        {
+            textDirty = true;
         }
     }
 }

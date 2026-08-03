@@ -5,6 +5,8 @@
   "ContainerNonempty": "{0} objets (pas plein)",
   "ContainerOneItemSlotsFree": "1 objet, {0} emplacements libres",
   "ContainerNonemptySlotsFree": "{0} objets, {1} emplacements libres",
+  "ContainerOneItemOneSlotFree": "1 objet, 1 emplacement libre",
+  "ContainerNonemptyOneSlotFree": "{0} objets, 1 emplacement libre",
   "SlotsOccupied": "occupé",
   "DisplayMode": "Mode d'affichage",
   "DisplayModeDefault": "Par défaut",
