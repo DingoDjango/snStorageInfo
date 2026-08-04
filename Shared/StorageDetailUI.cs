@@ -1,8 +1,6 @@
 using HarmonyLib;
 using Nautilus.Utility;
 using System;
-using System.IO;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,11 +17,7 @@ namespace StorageInfo
         private const float PadTop    = CornerPadding + 2f;
         private const float PadBottom = CornerPadding + 2f;
 
-        // Vanilla cell/grid texture (grey fill + left/top border lines, Repeat wrap).
-        private const string CellTextureFile = "PDACellBackground.png";
-
-        /* Vanilla grid corner L-shape sprites (36x36 texture, 4x 18x18 slices). */
-        private const string CornerTextureFile = "InventoryGridCorners.png";
+        // Vanilla grid corner L-shape sprites (36x36 texture, 4x 18x18 slices).
         private const float CornerSize = 18f;
         private const float CornerPadding = 10f;
 
@@ -56,7 +50,8 @@ namespace StorageInfo
         private static RawImage gridRawImage;
         private static Texture2D gridTexture;
         private static Image[] cornerImageComponents; // Corner L-shape images (TL/TR/BL/BR) childed to the grid rect, like vanilla.
-        private static Sprite[] cornerSprites; // Owned only when built from mod fallback file (vanilla sprites are shared assets).
+        private static Sprite[] cornerSprites; // Owned only when built from the procedural fallback (vanilla sprites are shared assets).
+        private static Texture2D cornerTexture; // Owned procedural fallback, destroyed with the corner sprites.
         private static bool cornerSpritesOwned;
         private static Image backgroundOverlay;
         private static uGUI_ItemsContainer cachedVanillaContainer;
@@ -210,9 +205,7 @@ namespace StorageInfo
             return true;
         }
 
-        // Copies the vanilla container grid texture/material/color unchanged, then
-        // applies the corner L-sprites. Falls back to the mod-folder PDACellBackground
-        // export, then to the procedural 1-cell tile when no source is available.
+        // Copies vanilla container grid appearance
         private static void ApplyGridAppearance()
         {
             uGUI_ItemsContainer vanilla = FindVanillaContainer();
@@ -229,7 +222,6 @@ namespace StorageInfo
 
             if (sourceTexture is Texture2D sourceTex2D)
             {
-                // Vanilla texture is a shared asset - copy reference, never destroy.
                 SetGridTexture(sourceTex2D, false);
 #if DEBUG
                 ModPlugin.LogMessage($"Preview grid: vanilla shared texture \"{sourceTex2D.name}\" ({sourceTex2D.width}x{sourceTex2D.height})");
@@ -244,29 +236,15 @@ namespace StorageInfo
             }
             else
             {
-                // Mod-folder export of the vanilla cell texture.
-                Texture2D cellTexture = LoadImageTexture(CellTextureFile);
-                if (cellTexture != null)
+                // Vanilla grid texture unavailable: generic 1-cell tile with border on cell edges.
+                ModPlugin.LogMessage("Preview grid: no vanilla texture, using procedural tile");
+                if (gridTexture == null)
                 {
-                    SetGridTexture(cellTexture, true);
-                    sourceMaterial = null;
-                    sourceColor = Color.white;
-#if DEBUG
-                    ModPlugin.LogMessage($"Preview grid: no vanilla source, mod folder \"{CellTextureFile}\" ({cellTexture.width}x{cellTexture.height})");
-#endif
+                    gridTexture = CreateGridTile(CellSize);
                 }
-                else
-                {
-                    // Last resort: procedural 1-cell tile with border on cell edges.
-                    if (gridTexture == null)
-                    {
-                        gridTexture = CreateGridTile(CellSize);
-                    }
-                    SetGridTexture(gridTexture, true);
-#if DEBUG
-                    ModPlugin.LogMessage("Preview grid: no vanilla source and no mod folder file, procedural tile");
-#endif
-                }
+                SetGridTexture(gridTexture, true);
+                sourceMaterial = null;
+                sourceColor = Color.white;
             }
 
             gridRawImage.material = sourceMaterial;
@@ -294,8 +272,7 @@ namespace StorageInfo
                 }
             }
 
-            // Fallback: uGUI.main direct search (covers layouts where the PDA screen is
-            // parented under the main UI canvas).
+            // Fallback: uGUI.main direct search (covers layouts where the PDA screen is parented under the main UI canvas).
             if (uGUI.main != null)
             {
                 uGUI_ItemsContainer container = FindLiveContainer(uGUI.main.transform);
@@ -416,6 +393,12 @@ namespace StorageInfo
             cornerSprites = null;
             cornerSpritesOwned = false;
 
+            if (cornerTexture != null)
+            {
+                UnityEngine.Object.Destroy(cornerTexture);
+                cornerTexture = null;
+            }
+
             // Try vanilla corner images first: Grid/TL, Grid/TR, Grid/BL, Grid/BR.
             Sprite[] vanillaSprites = null;
             if (vanilla != null && vanilla.grid != null)
@@ -452,21 +435,12 @@ namespace StorageInfo
                 return;
             }
 
-            // Fallback: mod-folder InventoryGridCorners export, sliced into 4 sprites.
-            Texture2D cornerTexture = LoadImageTexture(CornerTextureFile);
+            // Vanilla corner sprites unavailable: generic procedural L-shapes, sliced into 4 sprites.
+            ModPlugin.LogMessage("Preview corners: no vanilla sprites, using procedural corner texture");
             if (cornerTexture == null)
             {
-                for (int cornerIndex = 0; cornerIndex < cornerImageComponents.Length; cornerIndex++)
-                {
-                    cornerImageComponents[cornerIndex].sprite = null;
-                    cornerImageComponents[cornerIndex].enabled = false;
-                }
-#if DEBUG
-                ModPlugin.LogMessage("Preview corners: no vanilla sprites and no mod folder file, corners disabled");
-#endif
-                return;
+                cornerTexture = CreateProceduralCornerTexture();
             }
-
             cornerSprites = new Sprite[4];
             for (int cornerIndex = 0; cornerIndex < cornerImageComponents.Length; cornerIndex++)
             {
@@ -475,25 +449,6 @@ namespace StorageInfo
                 cornerImageComponents[cornerIndex].enabled = true;
             }
             cornerSpritesOwned = true;
-#if DEBUG
-            ModPlugin.LogMessage($"Preview corners: no vanilla sprites, mod folder \"{CornerTextureFile}\" sliced into 4 sprites");
-#endif
-        }
-
-        // Loads image from mod fallback folder (Images/Fallback/).
-        private static Texture2D LoadImageTexture(string fileName)
-        {
-            try
-            {
-                string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
-                string texturePath = Path.Combine(pluginDir, "Images", "Fallback", fileName);
-                return ImageUtils.LoadTextureFromFile(texturePath, TextureFormat.RGBA32);
-            }
-            catch (Exception e)
-            {
-                ModPlugin.LogMessage("Failed to load " + fileName + ": " + e.Message);
-                return null;
-            }
         }
 
         private static Sprite LoadPanelSprite()
@@ -503,8 +458,6 @@ namespace StorageInfo
                 return panelSprite;
             }
 
-            // Preferred: the vanilla storage background - the stretched PDACellBackground
-            // cell texture (grey fill + left/top lines). Shared asset, never destroyed.
             Texture2D vanillaBg = GetVanillaBackgroundTexture();
             if (vanillaBg != null)
             {
@@ -516,22 +469,10 @@ namespace StorageInfo
 #endif
                 return panelSprite;
             }
-#if DEBUG
-            ModPlugin.LogMessage("Preview panel background: no vanilla background, falling back to mod folder");
-#endif
-
-            // Fallback: mod-folder cell texture (PDABackground_Mod temporarily disabled),
-            // then procedural.
-            panelTexture = LoadImageTexture(CellTextureFile);
-            panelTextureOwned = panelTexture != null;
-
-            if (panelTexture == null)
-            {
-                panelTexture = CreateProceduralPanelTexture();
-            }
-#if DEBUG
-            ModPlugin.LogMessage($"Preview panel background: fallback texture \"{panelTexture.name}\" ({panelTexture.width}x{panelTexture.height})");
-#endif
+            // Vanilla background unavailable: generic procedural dark grid texture.
+            ModPlugin.LogMessage("Preview panel background: no vanilla background, using procedural texture");
+            panelTexture = CreateProceduralPanelTexture();
+            panelTextureOwned = true;
 
             // Deferred to Nautilus (equivalent to Sprite.Create with 100f pixelsPerUnit).
             panelSprite = ImageUtils.LoadSpriteFromTexture(panelTexture);
@@ -581,6 +522,37 @@ namespace StorageInfo
                     }
 
                     texture.SetPixel(pixelX, pixelY, new Color(0f, 0f, 0f, Mathf.Clamp(gridAlpha, 0f, 1f)));
+                }
+            }
+
+            texture.Apply();
+            return texture;
+        }
+
+        // Generic fallback: 36x36 texture with an L-shape in each quadrant,
+        // sliced with the same rects as the vanilla corner sprites.
+        private static Texture2D CreateProceduralCornerTexture()
+        {
+            const int size = 36;
+            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            Color clear = new Color(0f, 0f, 0f, 0f);
+            Color line = new Color(0f, 0f, 0f, 0.6f);
+
+            for (int pixelY = 0; pixelY < size; pixelY++)
+            {
+                for (int pixelX = 0; pixelX < size; pixelX++)
+                {
+                    int quadX = pixelX / 18;
+                    int quadY = pixelY / 18;
+                    int localX = pixelX % 18;
+                    int localY = pixelY % 18;
+
+                    bool isBorder = (quadX == 0 && localX < 2) ||
+                                    (quadX == 1 && localX >= 16) ||
+                                    (quadY == 0 && localY < 2) ||
+                                    (quadY == 1 && localY >= 16);
+
+                    texture.SetPixel(pixelX, pixelY, isBorder ? line : clear);
                 }
             }
 
@@ -650,10 +622,6 @@ namespace StorageInfo
 
             contentRect.localScale = new Vector3(scale, scale, 1f);
 
-            // Corners are children of the grid, so they inherit the content scale.
-            // Counter-scale size/offset by 1/scale so the L-shapes always render at
-            // their native pixel size (CornerSize) - crisp 1:1 like the vanilla PDA
-            // storage view at any panel scale, never upscaled/blurry.
             if (cornerImageComponents != null)
             {
                 float cornerSize = CornerSize / scale;
@@ -732,8 +700,6 @@ namespace StorageInfo
             root.transform.SetAsLastSibling();
             root.SetActive(true);
 
-            // CanvasGroup.blocksRaycasts=false already blocks all raycasts on this
-            // subtree; icon raycasts are disabled once per bind in Show().
             itemsContainerView.DoUpdate();
         }
 
@@ -741,12 +707,6 @@ namespace StorageInfo
         {
             if (root == null || !root.activeSelf || container == null || boundContainer != container)
             {
-                // Panel not built/bound/visible. After a scene load the first Show()
-                // can fail while uGUI/Player are still initializing, and the reticle
-                // dirty-flag gate in HarmonyPatches won't retry it - so re-enter the
-                // full Show() path here while the overlay is allowed. Show() is a cheap
-                // no-op once the panel is up and bound; gating on CanShowOverlay avoids
-                // Show()/Hide() churn every frame while blocked (e.g. PDA open).
                 if (container != null && CanShowOverlay(container))
                 {
                     Show(container);
@@ -760,8 +720,7 @@ namespace StorageInfo
                 return;
             }
 
-            // Vanilla per-frame bar update (batteries, food decay, etc.).
-            // No per-frame DisableIconRaycasts: the CanvasGroup already blocks raycasts.
+            // Vanilla per-frame bar update (batteries, food decay, etc.)
             itemsContainerView.DoUpdate();
         }
 
@@ -804,7 +763,7 @@ namespace StorageInfo
                 gridTexture = null;
             }
 
-            // Corner sprites are shared vanilla assets unless owned by the mod fallback.
+            // Corner sprites are shared vanilla assets unless owned by the procedural fallback.
             if (cornerSpritesOwned && cornerSprites != null)
             {
                 for (int cornerIndex = 0; cornerIndex < cornerSprites.Length; cornerIndex++)
@@ -817,6 +776,12 @@ namespace StorageInfo
             }
             cornerSprites = null;
             cornerSpritesOwned = false;
+
+            if (cornerTexture != null)
+            {
+                UnityEngine.Object.Destroy(cornerTexture);
+                cornerTexture = null;
+            }
             cornerImageComponents = null;
 
             gridRawImage = null;
