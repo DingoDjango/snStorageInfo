@@ -1,8 +1,8 @@
 ﻿{
   "ContainerEmpty": "Vuoto",
   "ContainerFull": "Pieno",
-  "ContainerOneItem": "1 oggetto (Non pieno)",
-  "ContainerNonempty": "{0} oggetti (Non pieno)",
+  "ContainerOneItem": "1 oggetto (non pieno)",
+  "ContainerNonempty": "{0} oggetti (non pieno)",
   "ContainerOneItemSlotsFree": "1 oggetto, {0} slot liberi",
   "ContainerNonemptySlotsFree": "{0} oggetti, {1} slot liberi",
   "ContainerOneItemOneSlotFree": "1 oggetto, 1 slot libero",
@@ -12,9 +12,9 @@
   "DisplayModeDefault": "Predefinita",
   "DisplayModeSlotsOnly": "Solo slot",
   "DisplayModePreview": "Anteprima interfaccia",
-  "Background": "Sfondo anteprima interfaccia",
-  "BackgroundOpacity": "Opacità dello sfondo",
+  "PreviewUIBackround": "Sfondo anteprima interfaccia",
+  "PreviewUIBackgroundOpacity": "Opacità dello sfondo dell'anteprima",
   "Tooltip_DisplayMode": "Stile per le informazioni dei contenitori al passaggio del mouse.\nPredefinita: X oggetti, Y slot liberi.\nSolo slot: X/Y slot occupati.\nAnteprima: interfaccia popup che mostra il contenuto del contenitore.",
-  "Tooltip_Background": "In modalità Anteprima, aggiunge uno sfondo scuro dietro l'interfaccia per migliorare la visibilità.",
-  "Tooltip_BackgroundOpacity": "Regola l'opacità dello sfondo scuro (0 - traslucido, 100% - colore pieno)."
+  "Tooltip_PreviewUIBackround": "In modalità Anteprima, aggiunge uno sfondo scuro dietro l'interfaccia per migliorare la visibilità.",
+  "Tooltip_PreviewUIBackgroundOpacity": "Regola il colore dello sfondo scuro dell'interfaccia di anteprima (0 - traslucido, 100% - colore pieno)."
 }

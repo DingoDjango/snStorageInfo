@@ -10,15 +10,10 @@ namespace StorageInfo
 {
     public static class StorageDetailUI
     {
-        // Max grid size before scaling down. Increase to allow larger containers at full size.
         private const float MaxPreviewWidth = 320f;
         private const float MaxPreviewHeight = 400f;
 
-        // Background border padding: space between texture edge and grid.
-        // PDABackground_Mod frame is nearly symmetric (L~20px, R~17px, T~17px, B~19px
-        // in a 1195x970 texture) and renders only ~5px thick at typical panel sizes
-        // (Image.Type.Simple stretches borders with panel size). PadRight/PadBottom must
-        // clear the rendered frame, else the grid spills over the border.
+        /* Padding between item grid and border texture. */
         private const float PadLeft   = 15f;
         private const float PadRight  = 15f;
         private const float PadTop    = 15f;
@@ -29,25 +24,18 @@ namespace StorageInfo
 
         // Vanilla grid corner L-shape sprites (36x36 texture, 4x 18x18 slices).
         private const string CornerTextureFile = "InventoryGridCorners.png";
-        // Native on-screen size of one corner L-shape (18x18 source slice). Corners are
-        // kept 1:1 with the source pixels so they render sharp like the vanilla PDA
-        // storage view, instead of being upscaled ~2x (which looks blurry).
         private const float CornerSize = 18f;
-        // Corners sit OUTSIDE the grid rect in vanilla - push them outward this far.
         private const float CornerPadding = 10f;
 
-        // Must match vanilla uGUI_ItemsContainer cell size.
+        // Must match vanilla uGUI_ItemsContainer cell size
         private const int CellSize = 71;
 
-        // Fixed panel placement - 75% from left, vertical center, no offset.
         private const float PanelAnchorX = 0.75f;
         private const float PanelAnchorY = 0.5f;
 
-        // Panel styling - semi-transparent dark like game panels.
         private const float PanelOpacity = 0.85f;
 
-        // Sprite rects in InventoryGridCorners.png, Unity bottom-left origin. From the
-        // exported .asset files: BL=(0,0), BR=(18,0), TL=(0,18), TR=(18,18), each 18x18.
+        /* Sprite rects in InventoryGridCorners.png. BL, BR, TL, TR order. */
         private static readonly Rect[] CornerRects =
         {
             new Rect(0f, 18f, 18f, 18f),   // TL
@@ -59,28 +47,18 @@ namespace StorageInfo
         private static GameObject root;
         private static RectTransform panelRect;
         private static RectTransform contentRect;
-        private static uGUI_ItemsContainerView containerView;
+        private static uGUI_ItemsContainerView itemsContainerView;
         private static ItemsContainer boundContainer;
-        private static bool built;
+        private static bool isBuilt;
         private static Sprite panelSprite;
-        private static Texture2D panelTexture;
-        // True when panelTexture was created by the mod (file/procedural). False when it
-        // is the shared vanilla cell texture - never destroyed.
-        private static bool panelTextureOwned;
-        private static RawImage gridImage;
-        // Owned only when the procedural fallback grid tile is used (vanilla grid texture is shared, never destroyed).
+        private static Texture2D panelTexture;         
+        private static bool panelTextureOwned; // True = panelTexture mod-created, False = vanilla shared asset (never destroyed)
+        private static RawImage gridRawImage;
         private static Texture2D gridTexture;
-        // Corner L-shape images (TL/TR/BL/BR) childed to the grid rect, like vanilla.
-        private static Image[] cornerImages;
-        // Owned only when built from the mod-folder fallback file (vanilla sprites are
-        // shared assets, never destroyed).
-        private static Sprite[] cornerSprites;
+        private static Image[] cornerImageComponents; // Corner L-shape images (TL/TR/BL/BR) childed to the grid rect, like vanilla.
+        private static Sprite[] cornerSprites; // Owned only when built from mod fallback file (vanilla sprites are shared assets).
         private static bool cornerSpritesOwned;
-        // Extra dark overlay above the background, below the grid. Optional via mod option.
         private static Image backgroundOverlay;
-        // Cached vanilla container so repeat look-ups are O(1). Unity-null safe:
-        // re-searches when the object is destroyed (scene change) or the grid loses
-        // its texture.
         private static uGUI_ItemsContainer cachedVanillaContainer;
         private static bool CanShowOverlay(ItemsContainer container)
         {
@@ -111,7 +89,7 @@ namespace StorageInfo
 
         private static bool EnsureBuilt()
         {
-            if (built && root != null)
+            if (isBuilt && root != null)
             {
                 return true;
             }
@@ -150,8 +128,7 @@ namespace StorageInfo
             Image panelImage = panelObj.AddComponent<Image>();
             panelImage.raycastTarget = false;
 
-            // Extra dark overlay: sits between background and grid, darkens grid area when option enabled.
-            // Strong enough that the item grid preview stays clearly readable over bright scenes.
+            // Dark overlay between background and grid, improves readability over bright scenes.
             GameObject overlayObj = new GameObject("BackgroundOverlay");
             overlayObj.layer = uiLayer;
             overlayObj.transform.SetParent(panelObj.transform, false);
@@ -194,42 +171,41 @@ namespace StorageInfo
             gridRect.offsetMin = Vector2.zero;
             gridRect.offsetMax = Vector2.zero;
 
-            gridImage = gridObj.AddComponent<RawImage>();
-            gridImage.raycastTarget = false;
+            gridRawImage = gridObj.AddComponent<RawImage>();
+            gridRawImage.raycastTarget = false;
             // Set initial uvRect so grid tiles correctly once texture is assigned
-            gridImage.uvRect = new Rect(0f, 0f, 1f, 1f);
+            gridRawImage.uvRect = new Rect(0f, 0f, 1f, 1f);
 
             // Corner L-shapes (TL/TR/BL/BR), children of the grid like vanilla.
-            cornerImages = new Image[4];
-            for (int c = 0; c < cornerImages.Length; c++)
+            cornerImageComponents = new Image[4];
+            for (int cornerIndex = 0; cornerIndex < cornerImageComponents.Length; cornerIndex++)
             {
-                GameObject cornerObj = new GameObject("Corner" + c);
+                GameObject cornerObj = new GameObject("Corner" + cornerIndex);
                 cornerObj.layer = uiLayer;
                 cornerObj.transform.SetParent(gridObj.transform, false);
 
                 RectTransform cornerRect = cornerObj.AddComponent<RectTransform>();
-                // Pivot/anchor to the matching corner of the grid rect. Offset outward
-                // by CornerPadding (vanilla places corner L-shapes outside the cell area).
-                float px = (c % 2 == 1) ? 1f : 0f;   // TR/BR = right
-                float py = (c >= 2) ? 0f : 1f;       // BL/BR = bottom
-                float signX = (c % 2 == 1) ? 1f : -1f;
-                float signY = (c >= 2) ? -1f : 1f;
-                cornerRect.anchorMin = new Vector2(px, py);
-                cornerRect.anchorMax = new Vector2(px, py);
-                cornerRect.pivot = new Vector2(px, py);
+                // Pivot/anchor to matching corner, offset outward by CornerPadding.
+                float pivotX = (cornerIndex % 2 == 1) ? 1f : 0f;   // TR/BR = right
+                float pivotY = (cornerIndex >= 2) ? 0f : 1f;       // BL/BR = bottom
+                float signX = (cornerIndex % 2 == 1) ? 1f : -1f;
+                float signY = (cornerIndex >= 2) ? -1f : 1f;
+                cornerRect.anchorMin = new Vector2(pivotX, pivotY);
+                cornerRect.anchorMax = new Vector2(pivotX, pivotY);
+                cornerRect.pivot = new Vector2(pivotX, pivotY);
                 cornerRect.anchoredPosition = new Vector2(signX * CornerPadding, signY * CornerPadding);
                 cornerRect.sizeDelta = new Vector2(CornerSize, CornerSize);
 
-                cornerImages[c] = cornerObj.AddComponent<Image>();
-                cornerImages[c].raycastTarget = false;
+                cornerImageComponents[cornerIndex] = cornerObj.AddComponent<Image>();
+                cornerImageComponents[cornerIndex].raycastTarget = false;
             }
 
-            containerView = viewObj.AddComponent<uGUI_ItemsContainerView>();
-            containerView.rectTransform = viewRect;
-            containerView.grid = gridImage;
+            itemsContainerView = viewObj.AddComponent<uGUI_ItemsContainerView>();
+            itemsContainerView.rectTransform = viewRect;
+            itemsContainerView.grid = gridRawImage;
 
             root.SetActive(false);
-            built = true;
+            isBuilt = true;
 
             return true;
         }
@@ -261,7 +237,7 @@ namespace StorageInfo
             }
             else if (sourceTexture != null)
             {
-                gridImage.texture = sourceTexture;
+                gridRawImage.texture = sourceTexture;
 #if DEBUG
                 ModPlugin.LogMessage($"Preview grid: vanilla shared texture (non-Texture2D) \"{sourceTexture.name}\"");
 #endif
@@ -287,16 +263,14 @@ namespace StorageInfo
                         gridTexture = CreateGridTile(CellSize);
                     }
                     SetGridTexture(gridTexture, true);
-                    sourceMaterial = null;
-                    sourceColor = Color.white;
 #if DEBUG
                     ModPlugin.LogMessage("Preview grid: no vanilla source and no mod folder file, procedural tile");
 #endif
                 }
             }
 
-            gridImage.material = sourceMaterial;
-            gridImage.color = sourceColor;
+            gridRawImage.material = sourceMaterial;
+            gridRawImage.color = sourceColor;
 
             ApplyCornerAppearance(vanilla);
         }
@@ -309,18 +283,14 @@ namespace StorageInfo
             }
             cachedVanillaContainer = null;
 
-            // Fast path: uGUI_PDA.main is the component on the uGUI_PDAScreen(Clone)
-            // root (lazily instantiated once by PDA.ui and kept in the scene). The
-            // vanilla inventory containers (Content/InventoryTab/*) are children of it,
-            // so one GetComponentsInChildren resolves the source without scanning every
-            // canvas or the whole scene.
+            // Fast path: search PDA screen first (children include vanilla inventory).
             if (uGUI_PDA.main != null)
             {
-                uGUI_ItemsContainer c = FindLiveContainer(uGUI_PDA.main.transform);
-                if (c != null)
+                uGUI_ItemsContainer container = FindLiveContainer(uGUI_PDA.main.transform);
+                if (container != null)
                 {
-                    cachedVanillaContainer = c;
-                    return c;
+                    cachedVanillaContainer = container;
+                    return container;
                 }
             }
 
@@ -328,35 +298,34 @@ namespace StorageInfo
             // parented under the main UI canvas).
             if (uGUI.main != null)
             {
-                uGUI_ItemsContainer c = FindLiveContainer(uGUI.main.transform);
-                if (c != null)
+                uGUI_ItemsContainer container = FindLiveContainer(uGUI.main.transform);
+                if (container != null)
                 {
-                    cachedVanillaContainer = c;
-                    return c;
+                    cachedVanillaContainer = container;
+                    return container;
                 }
             }
 
             // Broader fallback: search all canvases for a container with a live grid.
             Canvas[] canvases = Resources.FindObjectsOfTypeAll<Canvas>();
-            for (int i = 0; i < canvases.Length; i++)
+            for (int canvasIndex = 0; canvasIndex < canvases.Length; canvasIndex++)
             {
-                uGUI_ItemsContainer c = FindLiveContainer(canvases[i].transform);
-                if (c != null)
+                uGUI_ItemsContainer container = FindLiveContainer(canvases[canvasIndex].transform);
+                if (container != null)
                 {
-                    cachedVanillaContainer = c;
-                    return c;
+                    cachedVanillaContainer = container;
+                    return container;
                 }
             }
 
-            // Nuclear: scene-wide scan (Resources.FindObjectsOfTypeAll includes inactive;
-            // FindObjectsOfType(bool) was not added until Unity 2020.2).
-            uGUI_ItemsContainer[] all = Resources.FindObjectsOfTypeAll<uGUI_ItemsContainer>();
-            for (int i = 0; i < all.Length; i++)
+            // Nuclear: scene-wide scan (includes inactive objects).
+            uGUI_ItemsContainer[] allContainers = Resources.FindObjectsOfTypeAll<uGUI_ItemsContainer>();
+            for (int containerIndex = 0; containerIndex < allContainers.Length; containerIndex++)
             {
-                if (all[i].grid != null && all[i].grid.texture != null)
+                if (allContainers[containerIndex].grid != null && allContainers[containerIndex].grid.texture != null)
                 {
-                    cachedVanillaContainer = all[i];
-                    return all[i];
+                    cachedVanillaContainer = allContainers[containerIndex];
+                    return allContainers[containerIndex];
                 }
             }
             return null;
@@ -370,11 +339,11 @@ namespace StorageInfo
                 return null;
             }
             uGUI_ItemsContainer[] containers = root.GetComponentsInChildren<uGUI_ItemsContainer>(true);
-            for (int i = 0; i < containers.Length; i++)
+            for (int containerIndex = 0; containerIndex < containers.Length; containerIndex++)
             {
-                if (containers[i].grid != null && containers[i].grid.texture != null)
+                if (containers[containerIndex].grid != null && containers[containerIndex].grid.texture != null)
                 {
-                    return containers[i];
+                    return containers[containerIndex];
                 }
             }
             return null;
@@ -382,7 +351,7 @@ namespace StorageInfo
 
         private static void SetGridTexture(Texture2D texture, bool owned)
         {
-            if (gridImage == null)
+            if (gridRawImage == null)
             {
                 return;
             }
@@ -394,7 +363,7 @@ namespace StorageInfo
                 gridTexture = null;
             }
 
-            gridImage.texture = texture;
+            gridRawImage.texture = texture;
 
             if (owned)
             {
@@ -402,9 +371,7 @@ namespace StorageInfo
             }
         }
 
-        // 1-cell tile mimicking the vanilla PDACellBackground convention: border on the
-        // left (x==0) and top (y==0) edges only, tiled once per cell via uvRect. When
-        // tiled, each open right/bottom edge is closed by the next cell's left/top line.
+        // 1-cell tile with left/top border lines, tiled via uvRect.
         private static Texture2D CreateGridTile(int size)
         {
             Texture2D tile = new Texture2D(size, size, TextureFormat.RGBA32, false);
@@ -414,12 +381,12 @@ namespace StorageInfo
             Color clear = new Color(0f, 0f, 0f, 0f);
             Color line = new Color(0f, 0f, 0f, 0.15f);
 
-            for (int y = 0; y < size; y++)
+            for (int pixelY = 0; pixelY < size; pixelY++)
             {
-                for (int x = 0; x < size; x++)
+                for (int pixelX = 0; pixelX < size; pixelX++)
                 {
-                    bool edge = x == 0 || y == 0;
-                    tile.SetPixel(x, y, edge ? line : clear);
+                    bool edge = pixelX == 0 || pixelY == 0;
+                    tile.SetPixel(pixelX, pixelY, edge ? line : clear);
                 }
             }
 
@@ -427,12 +394,10 @@ namespace StorageInfo
             return tile;
         }
 
-        // Corner L-shapes (TL/TR/BL/BR) on the grid rect, like vanilla. Copies the
-        // vanilla sprites when the storage container is present (shared assets), else
-        // builds owned sprites from the mod-folder InventoryGridCorners export.
+        // Apply corner L-shapes from vanilla or fallback.
         private static void ApplyCornerAppearance(uGUI_ItemsContainer vanilla)
         {
-            if (cornerImages == null)
+            if (cornerImageComponents == null)
             {
                 return;
             }
@@ -440,11 +405,11 @@ namespace StorageInfo
             // Release previously owned fallback sprites before swapping references.
             if (cornerSpritesOwned && cornerSprites != null)
             {
-                for (int c = 0; c < cornerSprites.Length; c++)
+                for (int cornerIndex = 0; cornerIndex < cornerSprites.Length; cornerIndex++)
                 {
-                    if (cornerSprites[c] != null)
+                    if (cornerSprites[cornerIndex] != null)
                     {
-                        UnityEngine.Object.Destroy(cornerSprites[c]);
+                        UnityEngine.Object.Destroy(cornerSprites[cornerIndex]);
                     }
                 }
             }
@@ -457,16 +422,16 @@ namespace StorageInfo
             {
                 vanillaSprites = new Sprite[4];
                 string[] cornerNames = { "TL", "TR", "BL", "BR" };
-                Transform gridT = vanilla.grid.transform;
-                for (int c = 0; c < cornerNames.Length; c++)
+                Transform gridTransform = vanilla.grid.transform;
+                for (int cornerIndex = 0; cornerIndex < cornerNames.Length; cornerIndex++)
                 {
-                    Transform cornerT = gridT.Find(cornerNames[c]);
-                    Image cornerImg = cornerT != null ? cornerT.GetComponent<Image>() : null;
-                    vanillaSprites[c] = cornerImg != null ? cornerImg.sprite : null;
+                    Transform cornerTransform = gridTransform.Find(cornerNames[cornerIndex]);
+                    Image cornerImage = cornerTransform != null ? cornerTransform.GetComponent<Image>() : null;
+                    vanillaSprites[cornerIndex] = cornerImage != null ? cornerImage.sprite : null;
                 }
-                for (int c = 0; c < cornerImages.Length; c++)
+                for (int cornerIndex = 0; cornerIndex < cornerImageComponents.Length; cornerIndex++)
                 {
-                    if (vanillaSprites[c] == null)
+                    if (vanillaSprites[cornerIndex] == null)
                     {
                         vanillaSprites = null;
                         break;
@@ -476,10 +441,10 @@ namespace StorageInfo
 
             if (vanillaSprites != null)
             {
-                for (int c = 0; c < cornerImages.Length; c++)
+                for (int cornerIndex = 0; cornerIndex < cornerImageComponents.Length; cornerIndex++)
                 {
-                    cornerImages[c].sprite = vanillaSprites[c];
-                    cornerImages[c].enabled = true;
+                    cornerImageComponents[cornerIndex].sprite = vanillaSprites[cornerIndex];
+                    cornerImageComponents[cornerIndex].enabled = true;
                 }
 #if DEBUG
                 ModPlugin.LogMessage($"Preview corners: vanilla shared sprites (tex \"{vanillaSprites[0].texture.name}\")");
@@ -491,10 +456,10 @@ namespace StorageInfo
             Texture2D cornerTexture = LoadImageTexture(CornerTextureFile);
             if (cornerTexture == null)
             {
-                for (int c = 0; c < cornerImages.Length; c++)
+                for (int cornerIndex = 0; cornerIndex < cornerImageComponents.Length; cornerIndex++)
                 {
-                    cornerImages[c].sprite = null;
-                    cornerImages[c].enabled = false;
+                    cornerImageComponents[cornerIndex].sprite = null;
+                    cornerImageComponents[cornerIndex].enabled = false;
                 }
 #if DEBUG
                 ModPlugin.LogMessage("Preview corners: no vanilla sprites and no mod folder file, corners disabled");
@@ -503,11 +468,11 @@ namespace StorageInfo
             }
 
             cornerSprites = new Sprite[4];
-            for (int c = 0; c < cornerImages.Length; c++)
+            for (int cornerIndex = 0; cornerIndex < cornerImageComponents.Length; cornerIndex++)
             {
-                cornerSprites[c] = Sprite.Create(cornerTexture, CornerRects[c], new Vector2(0.5f, 0.5f), 100f);
-                cornerImages[c].sprite = cornerSprites[c];
-                cornerImages[c].enabled = true;
+                cornerSprites[cornerIndex] = Sprite.Create(cornerTexture, CornerRects[cornerIndex], new Vector2(0.5f, 0.5f), 100f);
+                cornerImageComponents[cornerIndex].sprite = cornerSprites[cornerIndex];
+                cornerImageComponents[cornerIndex].enabled = true;
             }
             cornerSpritesOwned = true;
 #if DEBUG
@@ -515,8 +480,7 @@ namespace StorageInfo
 #endif
         }
 
-        // Loads an image from the mod plugin's Images/Fallback folder (RGBA32).
-        // Last-resort source when the shared vanilla assets are not present.
+        // Loads image from mod fallback folder (Images/Fallback/).
         private static Texture2D LoadImageTexture(string fileName)
         {
             try
@@ -605,18 +569,18 @@ namespace StorageInfo
             const int gridSize = 32;
             Texture2D texture = new Texture2D(gridSize, gridSize, TextureFormat.RGBA32, false);
 
-            for (int y = 0; y < gridSize; y++)
+            for (int pixelY = 0; pixelY < gridSize; pixelY++)
             {
-                for (int x = 0; x < gridSize; x++)
+                for (int pixelX = 0; pixelX < gridSize; pixelX++)
                 {
                     float gridAlpha = 0.25f;
 
-                    if (x % 4 == 0 || y % 4 == 0)
+                    if (pixelX % 4 == 0 || pixelY % 4 == 0)
                     {
                         gridAlpha *= 1.5f;
                     }
 
-                    texture.SetPixel(x, y, new Color(0f, 0f, 0f, Mathf.Clamp(gridAlpha, 0f, 1f)));
+                    texture.SetPixel(pixelX, pixelY, new Color(0f, 0f, 0f, Mathf.Clamp(gridAlpha, 0f, 1f)));
                 }
             }
 
@@ -643,7 +607,6 @@ namespace StorageInfo
                 panelImage.color = new Color(1f, 1f, 1f, PanelOpacity);
             }
 
-            // Extra dark overlay - only when option enabled; opacity updated live per Show().
             if (backgroundOverlay != null)
             {
                 backgroundOverlay.color = new Color(0f, 0f, 0f, ModPlugin.options.PreviewUIBackgroundOpacity);
@@ -659,11 +622,11 @@ namespace StorageInfo
             float gridHeight = height * CellSize;
 
             contentRect.sizeDelta = new Vector2(gridWidth, gridHeight);
-            containerView.rectTransform.sizeDelta = new Vector2(gridWidth, gridHeight);
+            itemsContainerView.rectTransform.sizeDelta = new Vector2(gridWidth, gridHeight);
 
-            if (containerView.grid != null)
+            if (itemsContainerView.grid != null)
             {
-                containerView.grid.uvRect = new Rect(0f, 0f, width, height);
+                itemsContainerView.grid.uvRect = new Rect(0f, 0f, width, height);
             }
         }
 
@@ -681,17 +644,17 @@ namespace StorageInfo
             // Counter-scale size/offset by 1/scale so the L-shapes always render at
             // their native pixel size (CornerSize) - crisp 1:1 like the vanilla PDA
             // storage view at any panel scale, never upscaled/blurry.
-            if (cornerImages != null)
+            if (cornerImageComponents != null)
             {
                 float cornerSize = CornerSize / scale;
                 float cornerPad = CornerPadding / scale;
-                for (int c = 0; c < cornerImages.Length; c++)
+                for (int cornerIndex = 0; cornerIndex < cornerImageComponents.Length; cornerIndex++)
                 {
-                    RectTransform cr = cornerImages[c].rectTransform;
-                    float signX = (c % 2 == 1) ? 1f : -1f;
-                    float signY = (c >= 2) ? -1f : 1f;
-                    cr.sizeDelta = new Vector2(cornerSize, cornerSize);
-                    cr.anchoredPosition = new Vector2(signX * cornerPad, signY * cornerPad);
+                    RectTransform cornerRect = cornerImageComponents[cornerIndex].rectTransform;
+                    float signX = (cornerIndex % 2 == 1) ? 1f : -1f;
+                    float signY = (cornerIndex >= 2) ? -1f : 1f;
+                    cornerRect.sizeDelta = new Vector2(cornerSize, cornerSize);
+                    cornerRect.anchoredPosition = new Vector2(signX * cornerPad, signY * cornerPad);
                 }
             }
 
@@ -704,24 +667,24 @@ namespace StorageInfo
 
         private static void DisableIconRaycasts()
         {
-            if (containerView == null)
+            if (itemsContainerView == null)
             {
                 return;
             }
 
-            uGUI_ItemIcon[] icons = containerView.GetComponentsInChildren<uGUI_ItemIcon>(true);
+            uGUI_ItemIcon[] icons = itemsContainerView.GetComponentsInChildren<uGUI_ItemIcon>(true);
 
-            for (int i = 0; i < icons.Length; i++)
+            for (int iconIndex = 0; iconIndex < icons.Length; iconIndex++)
             {
-                icons[i].raycastTarget = false;
+                icons[iconIndex].raycastTarget = false;
             }
         }
 
         private static void UnbindContainer()
         {
-            if (containerView != null && boundContainer != null)
+            if (itemsContainerView != null && boundContainer != null)
             {
-                containerView.Uninit();
+                itemsContainerView.Uninit();
             }
 
             boundContainer = null;
@@ -745,7 +708,7 @@ namespace StorageInfo
                 UnbindContainer();
                 PrepareContainerLayout(container);
                 ((IItemsContainer)container).UpdateContainer();
-                containerView.Init(container);
+                itemsContainerView.Init(container);
                 DisableIconRaycasts();
                 boundContainer = container;
 
@@ -761,7 +724,7 @@ namespace StorageInfo
 
             // CanvasGroup.blocksRaycasts=false already blocks all raycasts on this
             // subtree; icon raycasts are disabled once per bind in Show().
-            containerView.DoUpdate();
+            itemsContainerView.DoUpdate();
         }
 
         public static void Tick(ItemsContainer container)
@@ -789,7 +752,7 @@ namespace StorageInfo
 
             // Vanilla per-frame bar update (batteries, food decay, etc.).
             // No per-frame DisableIconRaycasts: the CanvasGroup already blocks raycasts.
-            containerView.DoUpdate();
+            itemsContainerView.DoUpdate();
         }
 
         public static void Hide()
@@ -834,25 +797,25 @@ namespace StorageInfo
             // Corner sprites are shared vanilla assets unless owned by the mod fallback.
             if (cornerSpritesOwned && cornerSprites != null)
             {
-                for (int c = 0; c < cornerSprites.Length; c++)
+                for (int cornerIndex = 0; cornerIndex < cornerSprites.Length; cornerIndex++)
                 {
-                    if (cornerSprites[c] != null)
+                    if (cornerSprites[cornerIndex] != null)
                     {
-                        UnityEngine.Object.Destroy(cornerSprites[c]);
+                        UnityEngine.Object.Destroy(cornerSprites[cornerIndex]);
                     }
                 }
             }
             cornerSprites = null;
             cornerSpritesOwned = false;
-            cornerImages = null;
+            cornerImageComponents = null;
 
-            gridImage = null;
+            gridRawImage = null;
             backgroundOverlay = null;
             panelRect = null;
             contentRect = null;
-            containerView = null;
+            itemsContainerView = null;
             cachedVanillaContainer = null;
-            built = false;
+            isBuilt = false;
         }
     }
 }

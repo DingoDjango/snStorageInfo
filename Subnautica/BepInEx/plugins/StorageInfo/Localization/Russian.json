@@ -1,20 +1,20 @@
 ﻿{
   "ContainerEmpty": "Пусто",
   "ContainerFull": "Полностью заполнено",
-  "ContainerOneItem": "Заполнено 1 предметом",
-  "ContainerNonempty": "Заполнено {0} предметами",
+  "ContainerOneItem": "1 предмет (не полный)",
+  "ContainerNonempty": "{0} предметов (не полный)",
   "ContainerOneItemSlotsFree": "1 предмет, {0} слотов свободно",
-  "ContainerNonemptySlotsFree": "Предметов: {0}, слотов свободно: {1}",
+  "ContainerNonemptySlotsFree": "{0} предметов, {1} слотов свободно",
   "ContainerOneItemOneSlotFree": "1 предмет, 1 слот свободен",
-  "ContainerNonemptyOneSlotFree": "Предметов: {0}, 1 слот свободен",
+  "ContainerNonemptyOneSlotFree": "{0} предметов, 1 слот свободен",
   "SlotsOccupied": "занято",
   "DisplayMode": "Режим отображения",
   "DisplayModeDefault": "По умолчанию",
   "DisplayModeSlotsOnly": "Только слоты",
   "DisplayModePreview": "Предпросмотр интерфейса",
-  "Background": "Фон предпросмотра интерфейса",
-  "BackgroundOpacity": "Непрозрачность фона",
+  "PreviewUIBackround": "Фон предпросмотра интерфейса",
+  "PreviewUIBackgroundOpacity": "Непрозрачность фона предпросмотра",
   "Tooltip_DisplayMode": "Стиль информации о контейнере при наведении.\nПо умолчанию: X предметов, Y свободных слотов.\nТолько слоты: X/Y слотов занято.\nПредпросмотр: всплывающий интерфейс с содержимым контейнера.",
-  "Tooltip_Background": "В режиме «Предпросмотр» добавляет тёмный фон позади интерфейса для лучшей видимости.",
-  "Tooltip_BackgroundOpacity": "Регулирует непрозрачность тёмного фона (0 — полупрозрачный, 100% — сплошной цвет)."
+  "Tooltip_PreviewUIBackround": "В режиме «Предпросмотр» добавляет тёмный фон позади интерфейса для лучшей видимости.",
+  "Tooltip_PreviewUIBackgroundOpacity": "Регулирует цвет тёмного фона интерфейса предпросмотра (0 — полупрозрачный, 100% — сплошной цвет)."
 }

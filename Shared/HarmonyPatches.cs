@@ -8,20 +8,15 @@ namespace StorageInfo
     {
         private static StorageContainer hoveredStorage;
 
-        // Reticle text dirty-flag: vanilla StorageContainer.OnHandHover fires every frame,
-        // so the full container slot scan would otherwise run per frame while hovering.
+        // Reticle text dirty-flag via vanilla ItemsContainer events.
         private static ItemsContainer subscribedContainer;
         private static bool textDirty = true;
         private static DisplayMode lastAppliedMode;
 
-        // Only re-validate the hover target when the active target object changes.
         private static GameObject lastValidatedTarget;
 
-        // The game is not interactive until the load screen (WaitScreen) is dismissed.
-        // Save/new-game loading runs hover logic against a half-built world, so gate
-        // the patches on it. OnHandHover fires every frame while looking at a
-        // container, so the first frame after the load screen clears picks the hover
-        // back up automatically - no re-trigger needed.
+        // The game is not interactive until WaitScreen (loading) is dismissed.
+        // OnHandHover fires every frame while looking at a container. First frame after the load screen picks the hover back up.
         private static bool IsGameInteractive()
         {
             return !WaitScreen.IsWaiting;
@@ -112,16 +107,16 @@ namespace StorageInfo
 
             if (itemStorage.count == 1)
             {
-                string text = freeSlots == 1
+                string oneItemText = freeSlots == 1
                     ? "ContainerOneItemOneSlotFree".TryFormatTranslate()
                     : "ContainerOneItemSlotsFree".TryFormatTranslate(freeSlots);
-                return text ?? "ContainerOneItem".Translate();
+                return oneItemText ?? "ContainerOneItem".Translate();
             }
 
-            string text2 = freeSlots == 1
+            string nonemptyText = freeSlots == 1
                 ? "ContainerNonemptyOneSlotFree".TryFormatTranslate(itemStorage.count)
                 : "ContainerNonemptySlotsFree".TryFormatTranslate(itemStorage.count, freeSlots);
-            return text2 ?? "ContainerNonempty".FormatTranslate(itemStorage.count);
+            return nonemptyText ?? "ContainerNonempty".FormatTranslate(itemStorage.count);
         }
 
         private static string GetSlotsOnlyDisplayText(ItemsContainer itemStorage)
@@ -141,8 +136,6 @@ namespace StorageInfo
             StorageContainer targetStorage = target.GetComponentInParent<StorageContainer>();
             return targetStorage == storage;
         }
-
-        // --- Reticle text dirty-flag via vanilla ItemsContainer events ---
 
         private static void SubscribeToContainer(ItemsContainer container)
         {
@@ -192,9 +185,7 @@ namespace StorageInfo
             textDirty = true;
         }
 
-        // Clears scene-sensitive hover state on scene unload so stale references from
-        // the previous scene can't linger (e.g. lastValidatedTarget/hoveredStorage
-        // pointing at destroyed objects) and re-opens the reticle dirty-flag gate.
+        // Clears scene-sensitive state on unload.
         internal static void ResetSceneState()
         {
             hoveredStorage = null;
