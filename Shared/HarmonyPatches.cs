@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 using Nautilus.Utility;
 using UnityEngine;
@@ -198,23 +199,53 @@ namespace StorageInfo
 
         internal static void InitializeHarmony()
         {
-            Harmony harmony = new Harmony("Dingo.Harmony.StorageInfo");
+            try
+            {
+                Harmony harmony = new Harmony("Dingo.Harmony.StorageInfo");
 
-            harmony.Patch(
-                original: AccessTools.Method(typeof(StorageContainer), nameof(StorageContainer.OnHandHover)),
-                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandHover_Postfix)));
+                harmony.Patch(
+                    original: AccessTools.Method(typeof(StorageContainer), nameof(StorageContainer.OnHandHover)),
+                    postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandHover_Postfix)));
 
-            harmony.Patch(
-                original: AccessTools.Method(typeof(StorageContainer), "OnHandClick"),
-                prefix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandClick_Prefix)));
+                harmony.Patch(
+                    original: AccessTools.Method(typeof(StorageContainer), "OnHandClick"),
+                    prefix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandClick_Prefix)));
 
-            harmony.Patch(
-                original: AccessTools.Method(typeof(GUIHand), "OnUpdate"),
-                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_GUIHand_OnUpdate_Postfix)));
+                harmony.Patch(
+                    original: AccessTools.Method(typeof(GUIHand), "OnUpdate"),
+                    postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_GUIHand_OnUpdate_Postfix)));
+            }
+            catch (Exception ex)
+            {
+                ModPlugin.LogMessage($"Harmony patch initialization FAILED: {ex}");
+            }
         }
 
         public static void SetCustomInteractText(ItemsContainer itemStorage)
         {
+            // Reticle text must be re-applied every frame, no dirty flag here
+            // Vanilla StorageContainer.OnHandHover sets HandSubscript to "" each frame, which would otherwise wipe our text
+            string customSubscriptText = string.Empty;
+
+            if (itemStorage != null)
+            {
+                switch (ModPlugin.options.DisplayMode)
+                {
+                    case DisplayMode.DisplayModeDefault:
+                        customSubscriptText = GetDefaultDisplayText(itemStorage);
+                        break;
+                    case DisplayMode.DisplayModeSlotsOnly:
+                    case DisplayMode.DisplayModePreview:
+                        customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
+                        break;
+                }
+            }
+
+            if (HandReticle.main != null)
+            {
+                HandReticle.main.SetText(HandReticle.TextType.HandSubscript, customSubscriptText, false);
+            }
+
             if (!textDirty && ModPlugin.options.DisplayMode == lastAppliedMode)
             {
                 return;
@@ -223,31 +254,18 @@ namespace StorageInfo
             textDirty = false;
             lastAppliedMode = ModPlugin.options.DisplayMode;
 
-            string customSubscriptText = string.Empty;
-
             if (itemStorage == null)
             {
-                HandReticle.main.SetText(HandReticle.TextType.HandSubscript, customSubscriptText, false);
-                return;
+                StorageDetailUI.Hide();
             }
-
-            switch (ModPlugin.options.DisplayMode)
+            else if (ModPlugin.options.DisplayMode == DisplayMode.DisplayModePreview)
             {
-                case DisplayMode.DisplayModeDefault:
-                    customSubscriptText = GetDefaultDisplayText(itemStorage);
-                    StorageDetailUI.Hide();
-                    break;
-                case DisplayMode.DisplayModeSlotsOnly:
-                    customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
-                    StorageDetailUI.Hide();
-                    break;
-                case DisplayMode.DisplayModePreview:
-                    customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
-                    StorageDetailUI.Show(itemStorage);
-                    break;
+                StorageDetailUI.Show(itemStorage);
             }
-
-            HandReticle.main.SetText(HandReticle.TextType.HandSubscript, customSubscriptText, false);
+            else
+            {
+                StorageDetailUI.Hide();
+            }
         }
     }
 }
