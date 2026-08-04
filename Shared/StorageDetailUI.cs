@@ -13,21 +13,21 @@ namespace StorageInfo
         private const float MaxPreviewWidth = 320f;
         private const float MaxPreviewHeight = 400f;
 
-        /* Padding between item grid and border texture. */
-        private const float PadLeft   = 15f;
-        private const float PadRight  = 15f;
-        private const float PadTop    = 15f;
-        private const float PadBottom = 15f;
+        /* Panel edge sits 2px outside the corner L-shapes, which are the visual border. */
+        private const float PadLeft   = CornerPadding + 2f;
+        private const float PadRight  = CornerPadding + 2f;
+        private const float PadTop    = CornerPadding + 2f;
+        private const float PadBottom = CornerPadding + 2f;
 
         // Vanilla cell/grid texture (grey fill + left/top border lines, Repeat wrap).
         private const string CellTextureFile = "PDACellBackground.png";
 
-        // Vanilla grid corner L-shape sprites (36x36 texture, 4x 18x18 slices).
+        /* Vanilla grid corner L-shape sprites (36x36 texture, 4x 18x18 slices). */
         private const string CornerTextureFile = "InventoryGridCorners.png";
         private const float CornerSize = 18f;
         private const float CornerPadding = 10f;
 
-        // Must match vanilla uGUI_ItemsContainer cell size
+        // Match vanilla uGUI_ItemsContainer cell size
         private const int CellSize = 71;
 
         private const float PanelAnchorX = 0.75f;
@@ -612,6 +612,16 @@ namespace StorageInfo
                 backgroundOverlay.color = new Color(0f, 0f, 0f, ModPlugin.options.PreviewUIBackgroundOpacity);
                 backgroundOverlay.enabled = ModPlugin.options.PreviewUIBackround;
             }
+        }
+
+        public static void RefreshAppearance()
+        {
+            if (root == null || !root.activeSelf)
+            {
+                return;
+            }
+
+            ApplyPanelAppearance();
         }
 
         private static void PrepareContainerLayout(ItemsContainer container)

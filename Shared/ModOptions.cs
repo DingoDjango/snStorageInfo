@@ -32,6 +32,7 @@ namespace StorageInfo
 
         // Only shown in Preview mode with background enabled.
         [Slider(0f, 1f, DefaultValue = 0.75f, Format = "{0:F2}", LabelLanguageId = "PreviewUIBackgroundOpacity", TooltipLanguageId = "Tooltip_PreviewUIBackgroundOpacity")]
+        [OnChange(nameof(OnPreviewUIBackgroundOpacityChanged))]
         [OnGameObjectCreated(nameof(OnPreviewUIBackgroundOpacityOptionCreated))]
         public float PreviewUIBackgroundOpacity = 0.75f;
 
@@ -44,6 +45,12 @@ namespace StorageInfo
         private void OnPreviewUIBackroundChanged(object sender, ToggleChangedEventArgs e)
         {
             ApplyBackgroundVisibility();
+            StorageDetailUI.RefreshAppearance();
+        }
+
+        private void OnPreviewUIBackgroundOpacityChanged(object sender, SliderChangedEventArgs e)
+        {
+            StorageDetailUI.RefreshAppearance();
         }
 
         private void OnPreviewUIBackgroundOpacityOptionCreated(GameObjectCreatedEventArgs e)
