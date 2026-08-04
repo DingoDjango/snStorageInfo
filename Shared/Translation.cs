@@ -8,6 +8,14 @@ namespace StorageInfo
         // Log each missing key only once to avoid log spam (checked every hover frame).
         private static readonly HashSet<string> LoggedMissingKeys = new HashSet<string>();
 
+        private static void LogMissingKey(string source)
+        {
+            if (LoggedMissingKeys.Add(source))
+            {
+                ModPlugin.LogMessage($"Could not find translated string for `{source}`");
+            }
+        }
+
         internal static string Translate(this string source)
         {
             if (Language.main.TryGet(source, out string translated))
@@ -63,14 +71,6 @@ namespace StorageInfo
                 ModPlugin.LogMessage(ex.ToString());
                 ModPlugin.LogMessage($"Failed to format '{source}'");
                 return null;
-            }
-        }
-
-        private static void LogMissingKey(string source)
-        {
-            if (LoggedMissingKeys.Add(source))
-            {
-                ModPlugin.LogMessage($"Could not find translated string for `{source}`");
             }
         }
     }

@@ -36,16 +36,6 @@ namespace StorageInfo
         // Corners sit OUTSIDE the grid rect in vanilla - push them outward this far.
         private const float CornerPadding = 10f;
 
-        // Sprite rects in InventoryGridCorners.png, Unity bottom-left origin. From the
-        // exported .asset files: BL=(0,0), BR=(18,0), TL=(0,18), TR=(18,18), each 18x18.
-        private static readonly Rect[] CornerRects =
-        {
-            new Rect(0f, 18f, 18f, 18f),   // TL
-            new Rect(18f, 18f, 18f, 18f),  // TR
-            new Rect(0f, 0f, 18f, 18f),    // BL
-            new Rect(18f, 0f, 18f, 18f),   // BR
-        };
-
         // Must match vanilla uGUI_ItemsContainer cell size.
         private const int CellSize = 71;
 
@@ -55,6 +45,16 @@ namespace StorageInfo
 
         // Panel styling - semi-transparent dark like game panels.
         private const float PanelOpacity = 0.85f;
+
+        // Sprite rects in InventoryGridCorners.png, Unity bottom-left origin. From the
+        // exported .asset files: BL=(0,0), BR=(18,0), TL=(0,18), TR=(18,18), each 18x18.
+        private static readonly Rect[] CornerRects =
+        {
+            new Rect(0f, 18f, 18f, 18f),   // TL
+            new Rect(18f, 18f, 18f, 18f),  // TR
+            new Rect(0f, 0f, 18f, 18f),    // BL
+            new Rect(18f, 0f, 18f, 18f),   // BR
+        };
 
         private static GameObject root;
         private static RectTransform panelRect;
@@ -78,134 +78,12 @@ namespace StorageInfo
         private static bool cornerSpritesOwned;
         // Extra dark overlay above the background, below the grid. Optional via mod option.
         private static Image backgroundOverlay;
-
-        public static void Show(ItemsContainer container)
-        {
-            if (container == null || !CanShowOverlay(container))
-            {
-                Hide();
-                return;
-            }
-
-            if (!EnsureBuilt())
-            {
-                return;
-            }
-
-            if (boundContainer != container)
-            {
-                UnbindContainer();
-                PrepareContainerLayout(container);
-                ((IItemsContainer)container).UpdateContainer();
-                containerView.Init(container);
-                DisableIconRaycasts();
-                boundContainer = container;
-
-                ApplyGridAppearance();
-            }
-
-            // Reapply every Show so mod option changes take effect on next hover.
-            ApplyPanelAppearance();
-
-            LayoutPanel(container);
-            root.transform.SetAsLastSibling();
-            root.SetActive(true);
-
-            // CanvasGroup.blocksRaycasts=false already blocks all raycasts on this
-            // subtree; icon raycasts are disabled once per bind in Show().
-            containerView.DoUpdate();
-        }
-
-        public static void Tick(ItemsContainer container)
-        {
-            if (root == null || !root.activeSelf || container == null || boundContainer != container)
-            {
-                // Panel not built/bound/visible. After a scene load the first Show()
-                // can fail while uGUI/Player are still initializing, and the reticle
-                // dirty-flag gate in HarmonyPatches won't retry it - so re-enter the
-                // full Show() path here while the overlay is allowed. Show() is a cheap
-                // no-op once the panel is up and bound; gating on CanShowOverlay avoids
-                // Show()/Hide() churn every frame while blocked (e.g. PDA open).
-                if (container != null && CanShowOverlay(container))
-                {
-                    Show(container);
-                }
-                return;
-            }
-
-            if (!CanShowOverlay(container))
-            {
-                Hide();
-                return;
-            }
-
-            // Vanilla per-frame bar update (batteries, food decay, etc.).
-            // No per-frame DisableIconRaycasts: the CanvasGroup already blocks raycasts.
-            containerView.DoUpdate();
-        }
-
-        public static void Hide()
-        {
-            UnbindContainer();
-
-            if (root != null)
-            {
-                root.SetActive(false);
-            }
-        }
-
-        public static void Cleanup()
-        {
-            Hide();
-
-            if (root != null)
-            {
-                UnityEngine.Object.Destroy(root);
-                root = null;
-            }
-
-            if (panelSprite != null)
-            {
-                UnityEngine.Object.Destroy(panelSprite);
-                panelSprite = null;
-            }
-
-            if (panelTexture != null && panelTextureOwned)
-            {
-                UnityEngine.Object.Destroy(panelTexture);
-            }
-            panelTexture = null;
-            panelTextureOwned = false;
-
-            if (gridTexture != null)
-            {
-                UnityEngine.Object.Destroy(gridTexture);
-                gridTexture = null;
-            }
-
-            // Corner sprites are shared vanilla assets unless owned by the mod fallback.
-            if (cornerSpritesOwned && cornerSprites != null)
-            {
-                for (int c = 0; c < cornerSprites.Length; c++)
-                {
-                    if (cornerSprites[c] != null)
-                    {
-                        UnityEngine.Object.Destroy(cornerSprites[c]);
-                    }
-                }
-            }
-            cornerSprites = null;
-            cornerSpritesOwned = false;
-            cornerImages = null;
-
-            gridImage = null;
-            backgroundOverlay = null;
-            panelRect = null;
-            contentRect = null;
-            containerView = null;
-            cachedVanillaContainer = null;
-            built = false;
-        }
+        // Cached vanilla container so repeat look-ups are O(1). Unity-null safe:
+        // re-searches when the object is destroyed (scene change) or the grid loses
+        // its texture.
+        private static uGUI_ItemsContainer cachedVanillaContainer;
+        // One-shot log of which search branch resolved the vanilla container.
+        private static bool loggedFindBranch;
 
         private static bool CanShowOverlay(ItemsContainer container)
         {
@@ -278,7 +156,7 @@ namespace StorageInfo
             // Extra dark overlay: sits between background and grid, darkens grid area when option enabled.
             GameObject overlayObj = new GameObject("BackgroundOverlay");
             overlayObj.layer = uiLayer;
-            overlayObj.transform.SetParent(panelRect, false);
+            overlayObj.transform.SetParent(panelObj.transform, false);
             backgroundOverlay = overlayObj.AddComponent<Image>();
             backgroundOverlay.raycastTarget = false;
             backgroundOverlay.color = new Color(0f, 0f, 0f, 0.35f);
@@ -416,13 +294,6 @@ namespace StorageInfo
 
             ApplyCornerAppearance(vanilla);
         }
-
-        // Cached vanilla container so repeat look-ups are O(1). Unity-null safe:
-        // re-searches when the object is destroyed (scene change) or the grid loses
-        // its texture.
-        private static uGUI_ItemsContainer cachedVanillaContainer;
-        // One-shot log of which search branch resolved the vanilla container.
-        private static bool loggedFindBranch;
 
         private static uGUI_ItemsContainer FindVanillaContainer()
         {
@@ -801,7 +672,7 @@ namespace StorageInfo
             // Extra dark overlay - only when option enabled.
             if (backgroundOverlay != null)
             {
-                backgroundOverlay.enabled = ModPlugin.options.Background == PreviewBackground.Enabled;
+                backgroundOverlay.enabled = ModPlugin.options.Background;
             }
         }
 
@@ -861,6 +732,134 @@ namespace StorageInfo
             }
 
             boundContainer = null;
+        }
+
+        public static void Show(ItemsContainer container)
+        {
+            if (container == null || !CanShowOverlay(container))
+            {
+                Hide();
+                return;
+            }
+
+            if (!EnsureBuilt())
+            {
+                return;
+            }
+
+            if (boundContainer != container)
+            {
+                UnbindContainer();
+                PrepareContainerLayout(container);
+                ((IItemsContainer)container).UpdateContainer();
+                containerView.Init(container);
+                DisableIconRaycasts();
+                boundContainer = container;
+
+                ApplyGridAppearance();
+            }
+
+            // Reapply every Show so mod option changes take effect on next hover.
+            ApplyPanelAppearance();
+
+            LayoutPanel(container);
+            root.transform.SetAsLastSibling();
+            root.SetActive(true);
+
+            // CanvasGroup.blocksRaycasts=false already blocks all raycasts on this
+            // subtree; icon raycasts are disabled once per bind in Show().
+            containerView.DoUpdate();
+        }
+
+        public static void Tick(ItemsContainer container)
+        {
+            if (root == null || !root.activeSelf || container == null || boundContainer != container)
+            {
+                // Panel not built/bound/visible. After a scene load the first Show()
+                // can fail while uGUI/Player are still initializing, and the reticle
+                // dirty-flag gate in HarmonyPatches won't retry it - so re-enter the
+                // full Show() path here while the overlay is allowed. Show() is a cheap
+                // no-op once the panel is up and bound; gating on CanShowOverlay avoids
+                // Show()/Hide() churn every frame while blocked (e.g. PDA open).
+                if (container != null && CanShowOverlay(container))
+                {
+                    Show(container);
+                }
+                return;
+            }
+
+            if (!CanShowOverlay(container))
+            {
+                Hide();
+                return;
+            }
+
+            // Vanilla per-frame bar update (batteries, food decay, etc.).
+            // No per-frame DisableIconRaycasts: the CanvasGroup already blocks raycasts.
+            containerView.DoUpdate();
+        }
+
+        public static void Hide()
+        {
+            UnbindContainer();
+
+            if (root != null)
+            {
+                root.SetActive(false);
+            }
+        }
+
+        public static void Cleanup()
+        {
+            Hide();
+
+            if (root != null)
+            {
+                UnityEngine.Object.Destroy(root);
+                root = null;
+            }
+
+            if (panelSprite != null)
+            {
+                UnityEngine.Object.Destroy(panelSprite);
+                panelSprite = null;
+            }
+
+            if (panelTexture != null && panelTextureOwned)
+            {
+                UnityEngine.Object.Destroy(panelTexture);
+            }
+            panelTexture = null;
+            panelTextureOwned = false;
+
+            if (gridTexture != null)
+            {
+                UnityEngine.Object.Destroy(gridTexture);
+                gridTexture = null;
+            }
+
+            // Corner sprites are shared vanilla assets unless owned by the mod fallback.
+            if (cornerSpritesOwned && cornerSprites != null)
+            {
+                for (int c = 0; c < cornerSprites.Length; c++)
+                {
+                    if (cornerSprites[c] != null)
+                    {
+                        UnityEngine.Object.Destroy(cornerSprites[c]);
+                    }
+                }
+            }
+            cornerSprites = null;
+            cornerSpritesOwned = false;
+            cornerImages = null;
+
+            gridImage = null;
+            backgroundOverlay = null;
+            panelRect = null;
+            contentRect = null;
+            containerView = null;
+            cachedVanillaContainer = null;
+            built = false;
         }
     }
 }

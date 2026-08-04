@@ -7,6 +7,15 @@ namespace StorageInfo
 {
     public class HarmonyPatches
     {
+        // Debug dump of the exact vanilla asset names the storage PDA screen uses
+        // (uGUI_ItemsContainer.background + .grid in the PDA Inventory tab). Lets the
+        // author locate/export them from the game's AssetBundles (e.g. via AssetStudio)
+        // to replace the mod's own PDABackground_Mod.png fallback.
+        // Dumps up to a few times (assetDumpLimit) in case a dump is missed.
+        private const int assetDumpLimit = 5;
+
+        private static int assetDumpCount;
+
         private static StorageContainer hoveredStorage;
 
         // Reticle text dirty-flag: vanilla StorageContainer.OnHandHover fires every frame,
@@ -60,14 +69,6 @@ namespace StorageInfo
         {
             LogVanillaStorageAssets(__instance);
         }
-
-        // Debug dump of the exact vanilla asset names the storage PDA screen uses
-        // (uGUI_ItemsContainer.background + .grid in the PDA Inventory tab). Lets the
-        // author locate/export them from the game's AssetBundles (e.g. via AssetStudio)
-        // to replace the mod's own PDABackground_Mod.png fallback.
-        // Dumps up to a few times (assetDumpLimit) in case a dump is missed.
-        private static int assetDumpCount;
-        private const int assetDumpLimit = 5;
 
         private static void LogVanillaStorageAssets(uGUI_ItemsContainer target = null)
         {
@@ -252,19 +253,6 @@ namespace StorageInfo
             ModPlugin.LogMessage(sb.ToString());
         }
 
-        // Clears scene-sensitive hover state on scene unload so stale references from
-        // the previous scene can't linger (e.g. lastValidatedTarget/hoveredStorage
-        // pointing at destroyed objects) and re-opens the reticle dirty-flag gate.
-        internal static void ResetSceneState()
-        {
-            hoveredStorage = null;
-            UnsubscribeFromContainer();
-            subscribedContainer = null;
-            lastValidatedTarget = null;
-            textDirty = true;
-            lastAppliedMode = (DisplayMode)(-1);
-        }
-
         private static void Patch_GUIHand_OnUpdate_Postfix()
         {
             if (!IsGameInteractive())
@@ -308,64 +296,6 @@ namespace StorageInfo
             {
                 StorageDetailUI.Hide();
             }
-        }
-
-        internal static void InitializeHarmony()
-        {
-            Harmony harmony = new Harmony("Dingo.Harmony.StorageInfo");
-
-            harmony.Patch(
-                original: AccessTools.Method(typeof(StorageContainer), nameof(StorageContainer.OnHandHover)),
-                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandHover_Postfix)));
-
-            harmony.Patch(
-                original: AccessTools.Method(typeof(StorageContainer), "OnHandClick"),
-                prefix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandClick_Prefix)));
-
-            harmony.Patch(
-                original: AccessTools.Method(typeof(GUIHand), "OnUpdate"),
-                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_GUIHand_OnUpdate_Postfix)));
-
-            harmony.Patch(
-                original: AccessTools.Method(typeof(uGUI_ItemsContainer), "Init"),
-                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_ItemsContainerInit_Postfix)));
-        }
-
-        public static void SetCustomInteractText(ItemsContainer itemStorage)
-        {
-            if (!textDirty && ModPlugin.options.DisplayMode == lastAppliedMode)
-            {
-                return;
-            }
-
-            textDirty = false;
-            lastAppliedMode = ModPlugin.options.DisplayMode;
-
-            string customSubscriptText = string.Empty;
-
-            if (itemStorage == null)
-            {
-                HandReticle.main.SetText(HandReticle.TextType.HandSubscript, customSubscriptText, false);
-                return;
-            }
-
-            switch (ModPlugin.options.DisplayMode)
-            {
-                case DisplayMode.DisplayModeDefault:
-                    customSubscriptText = GetDefaultDisplayText(itemStorage);
-                    StorageDetailUI.Hide();
-                    break;
-                case DisplayMode.DisplayModeSlotsOnly:
-                    customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
-                    StorageDetailUI.Hide();
-                    break;
-                case DisplayMode.DisplayModeDetailedList:
-                    customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
-                    StorageDetailUI.Show(itemStorage);
-                    break;
-            }
-
-            HandReticle.main.SetText(HandReticle.TextType.HandSubscript, customSubscriptText, false);
         }
 
         private static string GetDefaultDisplayText(ItemsContainer itemStorage)
@@ -462,6 +392,77 @@ namespace StorageInfo
         private static void OnContainerResized(int width, int height)
         {
             textDirty = true;
+        }
+
+        // Clears scene-sensitive hover state on scene unload so stale references from
+        // the previous scene can't linger (e.g. lastValidatedTarget/hoveredStorage
+        // pointing at destroyed objects) and re-opens the reticle dirty-flag gate.
+        internal static void ResetSceneState()
+        {
+            hoveredStorage = null;
+            UnsubscribeFromContainer();
+            subscribedContainer = null;
+            lastValidatedTarget = null;
+            textDirty = true;
+            lastAppliedMode = (DisplayMode)(-1);
+        }
+
+        internal static void InitializeHarmony()
+        {
+            Harmony harmony = new Harmony("Dingo.Harmony.StorageInfo");
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(StorageContainer), nameof(StorageContainer.OnHandHover)),
+                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandHover_Postfix)));
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(StorageContainer), "OnHandClick"),
+                prefix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_OnHandClick_Prefix)));
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(GUIHand), "OnUpdate"),
+                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_GUIHand_OnUpdate_Postfix)));
+
+            harmony.Patch(
+                original: AccessTools.Method(typeof(uGUI_ItemsContainer), "Init"),
+                postfix: new HarmonyMethod(typeof(HarmonyPatches), nameof(HarmonyPatches.Patch_ItemsContainerInit_Postfix)));
+        }
+
+        public static void SetCustomInteractText(ItemsContainer itemStorage)
+        {
+            if (!textDirty && ModPlugin.options.DisplayMode == lastAppliedMode)
+            {
+                return;
+            }
+
+            textDirty = false;
+            lastAppliedMode = ModPlugin.options.DisplayMode;
+
+            string customSubscriptText = string.Empty;
+
+            if (itemStorage == null)
+            {
+                HandReticle.main.SetText(HandReticle.TextType.HandSubscript, customSubscriptText, false);
+                return;
+            }
+
+            switch (ModPlugin.options.DisplayMode)
+            {
+                case DisplayMode.DisplayModeDefault:
+                    customSubscriptText = GetDefaultDisplayText(itemStorage);
+                    StorageDetailUI.Hide();
+                    break;
+                case DisplayMode.DisplayModeSlotsOnly:
+                    customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
+                    StorageDetailUI.Hide();
+                    break;
+                case DisplayMode.DisplayModeDetailedList:
+                    customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
+                    StorageDetailUI.Show(itemStorage);
+                    break;
+            }
+
+            HandReticle.main.SetText(HandReticle.TextType.HandSubscript, customSubscriptText, false);
         }
     }
 }

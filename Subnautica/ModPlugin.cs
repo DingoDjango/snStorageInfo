@@ -15,11 +15,6 @@ namespace StorageInfo
 
         public static StorageInfoOptions options;
 
-        public static void LogMessage(string message)
-        {
-            Debug.Log($"{modName} :: {message}");
-        }
-
         private void Awake()
         {
             LanguageHandler.RegisterLocalizationFolder();
@@ -42,6 +37,11 @@ namespace StorageInfo
         {
             HarmonyPatches.ResetSceneState();
             StorageDetailUI.Cleanup();
+        }
+
+        public static void LogMessage(string message)
+        {
+            Debug.Log($"{modName} :: {message}");
         }
     }
 }
