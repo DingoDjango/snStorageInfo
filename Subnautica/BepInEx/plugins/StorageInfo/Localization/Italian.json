@@ -11,5 +11,10 @@
   "DisplayMode": "Modalità di visualizzazione",
   "DisplayModeDefault": "Predefinita",
   "DisplayModeSlotsOnly": "Solo slot",
-  "DisplayModeDetailedList": "Dettagliata"
+  "DisplayModePreview": "Anteprima interfaccia",
+  "Background": "Sfondo anteprima interfaccia",
+  "BackgroundOpacity": "Opacità dello sfondo",
+  "Tooltip_DisplayMode": "Stile per le informazioni dei contenitori al passaggio del mouse.\nPredefinita: X oggetti, Y slot liberi.\nSolo slot: X/Y slot occupati.\nAnteprima: interfaccia popup che mostra il contenuto del contenitore.",
+  "Tooltip_Background": "In modalità Anteprima, aggiunge uno sfondo scuro dietro l'interfaccia per migliorare la visibilità.",
+  "Tooltip_BackgroundOpacity": "Regola l'opacità dello sfondo scuro (0 - traslucido, 100% - colore pieno)."
 }

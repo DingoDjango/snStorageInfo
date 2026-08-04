@@ -11,5 +11,10 @@
   "DisplayMode": "Tryb wyświetlania",
   "DisplayModeDefault": "Domyślny",
   "DisplayModeSlotsOnly": "Tylko sloty",
-  "DisplayModeDetailedList": "Szczegółowy"
+  "DisplayModePreview": "Podgląd interfejsu",
+  "Background": "Tło podglądu interfejsu",
+  "BackgroundOpacity": "Nieprzezroczystość tła",
+  "Tooltip_DisplayMode": "Styl informacji o pojemniku po najechaniu kursorem.\nDomyślny: X przedmiotów, Y wolnych slotów.\nTylko sloty: X/Y slotów zajętych.\nPodgląd: wyskakujący interfejs pokazujący zawartość pojemnika.",
+  "Tooltip_Background": "W trybie Podgląd dodaje ciemne tło za interfejsem, aby poprawić widoczność.",
+  "Tooltip_BackgroundOpacity": "Ustawia nieprzezroczystość ciemnego tła (0 - półprzezroczyste, 100% - jednolite)."
 }

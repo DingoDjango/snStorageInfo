@@ -11,5 +11,10 @@
   "DisplayMode": "Mode d'affichage",
   "DisplayModeDefault": "Par défaut",
   "DisplayModeSlotsOnly": "Emplacements uniquement",
-  "DisplayModeDetailedList": "Détaillé"
+  "DisplayModePreview": "Aperçu de l'interface",
+  "PreviewUIBackround": "Arrière-plan de l'aperçu",
+  "PreviewUIBackgroundOpacity": "Opacité de l'arrière-plan de l'aperçu",
+  "Tooltip_DisplayMode": "Style des informations au survol des conteneurs.\nPar défaut : X objets, Y emplacements libres.\nEmplacements uniquement : X/Y emplacements occupés.\nAperçu : interface contextuelle montrant le contenu du conteneur.",
+  "Tooltip_PreviewUIBackround": "En mode Aperçu, ajoute un fond sombre derrière l'interface pour améliorer la visibilité.",
+  "Tooltip_PreviewUIBackgroundOpacity": "Règle la couleur du fond sombre de l'interface d'aperçu (0 - translucide, 100% - couleur opaque)."
 }

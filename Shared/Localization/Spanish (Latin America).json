@@ -1,8 +1,8 @@
 ﻿{
   "ContainerEmpty": "Vacío",
   "ContainerFull": "Lleno",
-  "ContainerOneItem": "1 objeto (No lleno)",
-  "ContainerNonempty": "{0} objetos (No lleno)",
+  "ContainerOneItem": "1 objeto (no lleno)",
+  "ContainerNonempty": "{0} objetos (no lleno)",
   "ContainerOneItemSlotsFree": "1 objeto, {0} ranuras libres",
   "ContainerNonemptySlotsFree": "{0} objetos, {1} ranuras libres",
   "ContainerOneItemOneSlotFree": "1 objeto, 1 ranura libre",
@@ -11,5 +11,10 @@
   "DisplayMode": "Modo de visualización",
   "DisplayModeDefault": "Por defecto",
   "DisplayModeSlotsOnly": "Solo ranuras",
-  "DisplayModeDetailedList": "Detallado"
+  "DisplayModePreview": "Vista previa de la interfaz",
+  "PreviewUIBackround": "Fondo de la vista previa de la interfaz",
+  "PreviewUIBackgroundOpacity": "Opacidad del fondo de la vista previa",
+  "Tooltip_DisplayMode": "Estilo de la información de los contenedores al pasar el cursor.\nPor defecto: X objetos, Y ranuras libres.\nSolo ranuras: X/Y ranuras ocupadas.\nVista previa: interfaz emergente que muestra el contenido del contenedor.",
+  "Tooltip_PreviewUIBackround": "En el modo Vista previa, añade un fondo oscuro detrás de la interfaz para mejorar la visibilidad.",
+  "Tooltip_PreviewUIBackgroundOpacity": "Ajusta el color del fondo oscuro de la interfaz de vista previa (0 - translúcido, 100% - color sólido)."
 }

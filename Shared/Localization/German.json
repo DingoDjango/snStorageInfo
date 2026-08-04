@@ -1,8 +1,8 @@
 ﻿{
   "ContainerEmpty": "Leer",
   "ContainerFull": "Voll",
-  "ContainerOneItem": "1 Gegenstand",
-  "ContainerNonempty": "{0} Gegenstände",
+  "ContainerOneItem": "1 Gegenstand (nicht voll)",
+  "ContainerNonempty": "{0} Gegenstände (nicht voll)",
   "ContainerOneItemSlotsFree": "1 Gegenstand, {0} Plätze frei",
   "ContainerNonemptySlotsFree": "{0} Gegenstände, {1} Plätze frei",
   "ContainerOneItemOneSlotFree": "1 Gegenstand, 1 Platz frei",
@@ -11,5 +11,10 @@
   "DisplayMode": "Anzeigemodus",
   "DisplayModeDefault": "Standard",
   "DisplayModeSlotsOnly": "Nur Plätze",
-  "DisplayModeDetailedList": "Detailliert"
+  "DisplayModePreview": "Vorschau-UI",
+  "PreviewUIBackround": "Vorschau-UI-Hintergrund",
+  "PreviewUIBackgroundOpacity": "Deckkraft des Vorschau-Hintergrunds",
+  "Tooltip_DisplayMode": "Stil für Schwebetext-Informationen zu Containern.\nStandard: X Gegenstände, Y Plätze frei.\nNur Plätze: X/Y Plätze belegt.\nVorschau: Popup-UI mit Container-Inhalt.",
+  "Tooltip_PreviewUIBackround": "Fügt im Vorschau-Modus einen dunklen Hintergrund hinter der UI hinzu, um die Sichtbarkeit zu verbessern.",
+  "Tooltip_PreviewUIBackgroundOpacity": "Stellt die Farbe des dunklen Vorschau-UI-Hintergrunds ein (0 - durchscheinend, 100% - deckende Farbe)."
 }

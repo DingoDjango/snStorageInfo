@@ -147,9 +147,11 @@ SET ZIPFILE=..\ZIP\Subnautica\$(ProjectName).zip
 
 if not exist "..\ZIP" mkdir "..\ZIP"
 
-xcopy "$(ProjectDir)BepInEx\plugins\StorageInfo\*" "%25MODDIR%25plugins\StorageInfo\" /i /e /r /y
+rem /q = no per-file list; >nul = no summary. Errors still fail the build via exit code.
+xcopy "$(ProjectDir)BepInEx\plugins\StorageInfo\*" "%25MODDIR%25plugins\StorageInfo\" /i /e /r /y /q >nul
 
-"C:\Program Files\7-Zip\7z.exe" a -mx9 "%25ZIPFILE%25" "BepInEx\plugins\StorageInfo"</PostBuildEvent>
+rem -bso0/-bsp0 = no standard/progress output; -bse2 = errors to stderr so they stay visible.
+"C:\Program Files\7-Zip\7z.exe" a -mx9 -bso0 -bse2 -bsp0 "%25ZIPFILE%25" "BepInEx\plugins\StorageInfo"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Microsoft.Common.targets.

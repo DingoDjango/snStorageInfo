@@ -86,7 +86,7 @@ namespace StorageInfo
                 }
             }
 
-            if (ModPlugin.options.DisplayMode == DisplayMode.DisplayModeDetailedList && hoveredStorage.container != null)
+            if (ModPlugin.options.DisplayMode == DisplayMode.DisplayModePreview && hoveredStorage.container != null)
             {
                 StorageDetailUI.Tick(hoveredStorage.container);
             }
@@ -250,7 +250,7 @@ namespace StorageInfo
                     customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
                     StorageDetailUI.Hide();
                     break;
-                case DisplayMode.DisplayModeDetailedList:
+                case DisplayMode.DisplayModePreview:
                     customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
                     StorageDetailUI.Show(itemStorage);
                     break;

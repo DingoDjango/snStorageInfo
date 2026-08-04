@@ -11,5 +11,10 @@
   "DisplayMode": "Anzeigemodus",
   "DisplayModeDefault": "Standard",
   "DisplayModeSlotsOnly": "Nur Plätze",
-  "DisplayModeDetailedList": "Detailliert"
+  "DisplayModePreview": "Vorschau-UI",
+  "Background": "Vorschau-UI-Hintergrund",
+  "BackgroundOpacity": "Hintergrund-Deckkraft",
+  "Tooltip_DisplayMode": "Stil für Schwebetext-Informationen zu Containern.\nStandard: X Gegenstände, Y Plätze frei.\nNur Plätze: X/Y Plätze belegt.\nVorschau: Popup-UI mit Container-Inhalt.",
+  "Tooltip_Background": "Fügt im Vorschau-Modus einen dunklen Hintergrund hinter der UI hinzu, um die Sichtbarkeit zu verbessern.",
+  "Tooltip_BackgroundOpacity": "Stellt die Deckkraft des dunklen Hintergrunds ein (0 - durchscheinend, 100% - deckende Farbe)."
 }

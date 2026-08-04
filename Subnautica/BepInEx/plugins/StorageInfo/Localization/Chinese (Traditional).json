@@ -11,5 +11,10 @@
   "DisplayMode": "顯示模式",
   "DisplayModeDefault": "默認",
   "DisplayModeSlotsOnly": "僅槽位",
-  "DisplayModeDetailedList": "詳細"
+  "DisplayModePreview": "預覽介面",
+  "Background": "預覽介面背景",
+  "BackgroundOpacity": "背景不透明度",
+  "Tooltip_DisplayMode": "容器懸停資訊的樣式。\n預設：X 物品，Y 個空餘槽位。\n僅槽位：X/Y 槽位已占用。\n預覽：彈出介面顯示容器內容。",
+  "Tooltip_Background": "在預覽模式下，在介面後添加深色背景以提高可見性。",
+  "Tooltip_BackgroundOpacity": "調整深色背景的不透明度（0 - 半透明，100% - 純色）。"
 }

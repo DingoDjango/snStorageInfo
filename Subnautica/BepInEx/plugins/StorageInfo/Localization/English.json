@@ -11,5 +11,10 @@
   "DisplayMode": "Display mode",
   "DisplayModeDefault": "Default",
   "DisplayModeSlotsOnly": "Slots only",
-  "DisplayModeDetailedList": "Detailed"
+  "DisplayModePreview": "Preview UI",
+  "Background": "Preview UI background",
+  "BackgroundOpacity": "Background opacity",
+  "Tooltip_DisplayMode": "Style for storage container hover information.\nDefault: X items, Y free slots.\nSlots only: X/Y slots occupied.\nPreview: popup UI showing container contents.",
+  "Tooltip_Background": "In Preview mode, adds dark background behind the UI to improve visibility.",
+  "Tooltip_BackgroundOpacity": "Adjusts opacity of dark background (0 - translucent, 100% - solid colour)."
 }

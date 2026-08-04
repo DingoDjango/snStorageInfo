@@ -29,7 +29,10 @@ namespace StorageInfo
 
         // Vanilla grid corner L-shape sprites (36x36 texture, 4x 18x18 slices).
         private const string CornerTextureFile = "InventoryGridCorners.png";
-        private const float CornerSize = 36f;
+        // Native on-screen size of one corner L-shape (18x18 source slice). Corners are
+        // kept 1:1 with the source pixels so they render sharp like the vanilla PDA
+        // storage view, instead of being upscaled ~2x (which looks blurry).
+        private const float CornerSize = 18f;
         // Corners sit OUTSIDE the grid rect in vanilla - push them outward this far.
         private const float CornerPadding = 10f;
 
@@ -148,12 +151,13 @@ namespace StorageInfo
             panelImage.raycastTarget = false;
 
             // Extra dark overlay: sits between background and grid, darkens grid area when option enabled.
+            // Strong enough that the item grid preview stays clearly readable over bright scenes.
             GameObject overlayObj = new GameObject("BackgroundOverlay");
             overlayObj.layer = uiLayer;
             overlayObj.transform.SetParent(panelObj.transform, false);
             backgroundOverlay = overlayObj.AddComponent<Image>();
             backgroundOverlay.raycastTarget = false;
-            backgroundOverlay.color = new Color(0f, 0f, 0f, 0.35f);
+            backgroundOverlay.color = new Color(0f, 0f, 0f, ModPlugin.options.PreviewUIBackgroundOpacity);
             RectTransform overlayRect = backgroundOverlay.rectTransform;
             overlayRect.anchorMin = Vector2.zero;
             overlayRect.anchorMax = Vector2.one;
@@ -639,10 +643,11 @@ namespace StorageInfo
                 panelImage.color = new Color(1f, 1f, 1f, PanelOpacity);
             }
 
-            // Extra dark overlay - only when option enabled.
+            // Extra dark overlay - only when option enabled; opacity updated live per Show().
             if (backgroundOverlay != null)
             {
-                backgroundOverlay.enabled = ModPlugin.options.Background;
+                backgroundOverlay.color = new Color(0f, 0f, 0f, ModPlugin.options.PreviewUIBackgroundOpacity);
+                backgroundOverlay.enabled = ModPlugin.options.PreviewUIBackround;
             }
         }
 
@@ -671,6 +676,24 @@ namespace StorageInfo
             float scale = Mathf.Min(1f, MaxPreviewWidth / gridWidth, MaxPreviewHeight / gridHeight);
 
             contentRect.localScale = new Vector3(scale, scale, 1f);
+
+            // Corners are children of the grid, so they inherit the content scale.
+            // Counter-scale size/offset by 1/scale so the L-shapes always render at
+            // their native pixel size (CornerSize) - crisp 1:1 like the vanilla PDA
+            // storage view at any panel scale, never upscaled/blurry.
+            if (cornerImages != null)
+            {
+                float cornerSize = CornerSize / scale;
+                float cornerPad = CornerPadding / scale;
+                for (int c = 0; c < cornerImages.Length; c++)
+                {
+                    RectTransform cr = cornerImages[c].rectTransform;
+                    float signX = (c % 2 == 1) ? 1f : -1f;
+                    float signY = (c >= 2) ? -1f : 1f;
+                    cr.sizeDelta = new Vector2(cornerSize, cornerSize);
+                    cr.anchoredPosition = new Vector2(signX * cornerPad, signY * cornerPad);
+                }
+            }
 
             contentRect.anchoredPosition = new Vector2(PadLeft, -PadTop);
 
