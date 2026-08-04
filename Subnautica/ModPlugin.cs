@@ -40,6 +40,7 @@ namespace StorageInfo
 
         private void OnSceneUnloaded(Scene scene)
         {
+            HarmonyPatches.ResetSceneState();
             StorageDetailUI.Cleanup();
         }
     }
