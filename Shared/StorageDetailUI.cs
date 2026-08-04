@@ -24,9 +24,6 @@ namespace StorageInfo
         private const float PadTop    = 15f;
         private const float PadBottom = 15f;
 
-        // Panel background texture file.
-        private const string BackgroundTextureFile = "PDABackground_Mod.png";
-
         // Vanilla cell/grid texture (grey fill + left/top border lines, Repeat wrap).
         private const string CellTextureFile = "PDACellBackground.png";
 
@@ -82,9 +79,6 @@ namespace StorageInfo
         // re-searches when the object is destroyed (scene change) or the grid loses
         // its texture.
         private static uGUI_ItemsContainer cachedVanillaContainer;
-        // One-shot log of which search branch resolved the vanilla container.
-        private static bool loggedFindBranch;
-
         private static bool CanShowOverlay(ItemsContainer container)
         {
             if (WaitScreen.IsWaiting)
@@ -257,12 +251,16 @@ namespace StorageInfo
             {
                 // Vanilla texture is a shared asset - copy reference, never destroy.
                 SetGridTexture(sourceTex2D, false);
+#if DEBUG
                 ModPlugin.LogMessage($"Preview grid: vanilla shared texture \"{sourceTex2D.name}\" ({sourceTex2D.width}x{sourceTex2D.height})");
+#endif
             }
             else if (sourceTexture != null)
             {
                 gridImage.texture = sourceTexture;
+#if DEBUG
                 ModPlugin.LogMessage($"Preview grid: vanilla shared texture (non-Texture2D) \"{sourceTexture.name}\"");
+#endif
             }
             else
             {
@@ -273,7 +271,9 @@ namespace StorageInfo
                     SetGridTexture(cellTexture, true);
                     sourceMaterial = null;
                     sourceColor = Color.white;
+#if DEBUG
                     ModPlugin.LogMessage($"Preview grid: no vanilla source, mod folder \"{CellTextureFile}\" ({cellTexture.width}x{cellTexture.height})");
+#endif
                 }
                 else
                 {
@@ -285,7 +285,9 @@ namespace StorageInfo
                     SetGridTexture(gridTexture, true);
                     sourceMaterial = null;
                     sourceColor = Color.white;
+#if DEBUG
                     ModPlugin.LogMessage("Preview grid: no vanilla source and no mod folder file, procedural tile");
+#endif
                 }
             }
 
@@ -313,7 +315,6 @@ namespace StorageInfo
                 uGUI_ItemsContainer c = FindLiveContainer(uGUI_PDA.main.transform);
                 if (c != null)
                 {
-                    LogFindBranch("pda-root: " + BuildTransformPath(c.transform));
                     cachedVanillaContainer = c;
                     return c;
                 }
@@ -326,7 +327,6 @@ namespace StorageInfo
                 uGUI_ItemsContainer c = FindLiveContainer(uGUI.main.transform);
                 if (c != null)
                 {
-                    LogFindBranch("uGUI-main: " + BuildTransformPath(c.transform));
                     cachedVanillaContainer = c;
                     return c;
                 }
@@ -339,7 +339,6 @@ namespace StorageInfo
                 uGUI_ItemsContainer c = FindLiveContainer(canvases[i].transform);
                 if (c != null)
                 {
-                    LogFindBranch("canvas-branch: " + BuildTransformPath(c.transform));
                     cachedVanillaContainer = c;
                     return c;
                 }
@@ -352,12 +351,10 @@ namespace StorageInfo
             {
                 if (all[i].grid != null && all[i].grid.texture != null)
                 {
-                    LogFindBranch("resources-branch: " + BuildTransformPath(all[i].transform));
                     cachedVanillaContainer = all[i];
                     return all[i];
                 }
             }
-            LogFindBranch("null (no vanilla container found)");
             return null;
         }
 
@@ -377,30 +374,6 @@ namespace StorageInfo
                 }
             }
             return null;
-        }
-
-        private static void LogFindBranch(string message)
-        {
-            if (loggedFindBranch)
-            {
-                return;
-            }
-            loggedFindBranch = true;
-            ModPlugin.LogMessage("Preview find branch: " + message);
-        }
-
-        private static string BuildTransformPath(Transform node)
-        {
-            string path = node.name;
-            Transform parent = node.parent;
-            int hops = 0;
-            while (parent != null && hops < 8)
-            {
-                path = parent.name + "/" + path;
-                parent = parent.parent;
-                hops++;
-            }
-            return path;
         }
 
         private static void SetGridTexture(Texture2D texture, bool owned)
@@ -504,7 +477,9 @@ namespace StorageInfo
                     cornerImages[c].sprite = vanillaSprites[c];
                     cornerImages[c].enabled = true;
                 }
+#if DEBUG
                 ModPlugin.LogMessage($"Preview corners: vanilla shared sprites (tex \"{vanillaSprites[0].texture.name}\")");
+#endif
                 return;
             }
 
@@ -517,7 +492,9 @@ namespace StorageInfo
                     cornerImages[c].sprite = null;
                     cornerImages[c].enabled = false;
                 }
+#if DEBUG
                 ModPlugin.LogMessage("Preview corners: no vanilla sprites and no mod folder file, corners disabled");
+#endif
                 return;
             }
 
@@ -529,17 +506,19 @@ namespace StorageInfo
                 cornerImages[c].enabled = true;
             }
             cornerSpritesOwned = true;
+#if DEBUG
             ModPlugin.LogMessage($"Preview corners: no vanilla sprites, mod folder \"{CornerTextureFile}\" sliced into 4 sprites");
+#endif
         }
 
-        // Loads an image from the mod plugin's Images folder (RGBA32). Last-resort
-        // source when the shared vanilla assets are not present.
+        // Loads an image from the mod plugin's Images/Fallback folder (RGBA32).
+        // Last-resort source when the shared vanilla assets are not present.
         private static Texture2D LoadImageTexture(string fileName)
         {
             try
             {
                 string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
-                string texturePath = Path.Combine(pluginDir, "Images", fileName);
+                string texturePath = Path.Combine(pluginDir, "Images", "Fallback", fileName);
                 return ImageUtils.LoadTextureFromFile(texturePath, TextureFormat.RGBA32);
             }
             catch (Exception e)
@@ -564,10 +543,14 @@ namespace StorageInfo
                 panelTexture = vanillaBg;
                 panelTextureOwned = false;
                 panelSprite = ImageUtils.LoadSpriteFromTexture(panelTexture);
+#if DEBUG
                 ModPlugin.LogMessage($"Preview panel background: vanilla shared texture \"{vanillaBg.name}\" ({vanillaBg.width}x{vanillaBg.height})");
+#endif
                 return panelSprite;
             }
+#if DEBUG
             ModPlugin.LogMessage("Preview panel background: no vanilla background, falling back to mod folder");
+#endif
 
             // Fallback: mod-folder cell texture (PDABackground_Mod temporarily disabled),
             // then procedural.
@@ -578,7 +561,9 @@ namespace StorageInfo
             {
                 panelTexture = CreateProceduralPanelTexture();
             }
+#if DEBUG
             ModPlugin.LogMessage($"Preview panel background: fallback texture \"{panelTexture.name}\" ({panelTexture.width}x{panelTexture.height})");
+#endif
 
             // Deferred to Nautilus (equivalent to Sprite.Create with 100f pixelsPerUnit).
             panelSprite = ImageUtils.LoadSpriteFromTexture(panelTexture);
@@ -608,21 +593,6 @@ namespace StorageInfo
             }
 
             return null;
-        }
-
-        private static Texture2D LoadPanelTexture()
-        {
-            try
-            {
-                string pluginDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
-                string texturePath = Path.Combine(pluginDir, "Images", BackgroundTextureFile);
-                return ImageUtils.LoadTextureFromFile(texturePath, TextureFormat.RGBA32);
-            }
-            catch (Exception e)
-            {
-                ModPlugin.LogMessage("Failed to load " + BackgroundTextureFile + ": " + e.Message);
-                return null;
-            }
         }
 
         // Procedural fallback: dark translucent grid texture.

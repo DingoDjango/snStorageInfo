@@ -134,8 +134,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Shared\Images\*.*">
-      <Link>Images\%(Filename)%(Extension)</Link>
+    <None Include="..\Shared\Images\Fallback\*.*">
+      <Link>Images\Fallback\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
