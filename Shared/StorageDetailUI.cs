@@ -24,8 +24,8 @@ namespace StorageInfo
         // Match vanilla uGUI_ItemsContainer cell size
         private const int CellSize = 71;
 
-        private const float PanelAnchorX = 0.75f;
-        private const float PanelAnchorY = 0.5f;
+        internal const float PanelAnchorX = 0.75f;
+        internal const float PanelAnchorY = 0.5f;
 
         private const float PanelOpacity = 0.85f;
 
@@ -115,8 +115,7 @@ namespace StorageInfo
             panelObj.layer = uiLayer;
             panelObj.transform.SetParent(root.transform, false);
             panelRect = panelObj.AddComponent<RectTransform>();
-            panelRect.anchorMin = new Vector2(PanelAnchorX, PanelAnchorY);
-            panelRect.anchorMax = new Vector2(PanelAnchorX, PanelAnchorY);
+            ApplyPanelAnchor();
             panelRect.pivot = new Vector2(0.5f, 0.5f);
             panelRect.anchoredPosition = Vector2.zero;
 
@@ -586,6 +585,18 @@ namespace StorageInfo
             }
         }
 
+        private static void ApplyPanelAnchor()
+        {
+            if (panelRect == null)
+            {
+                return;
+            }
+
+            Vector2 anchor = new Vector2(ModPlugin.options.PreviewUIAnchorX, ModPlugin.options.PreviewUIAnchorY);
+            panelRect.anchorMin = anchor;
+            panelRect.anchorMax = anchor;
+        }
+
         public static void RefreshAppearance()
         {
             if (root == null || !root.activeSelf)
@@ -593,6 +604,7 @@ namespace StorageInfo
                 return;
             }
 
+            ApplyPanelAnchor();
             ApplyPanelAppearance();
         }
 

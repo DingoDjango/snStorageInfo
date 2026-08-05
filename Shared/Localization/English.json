@@ -16,5 +16,9 @@
   "PreviewUIBackgroundOpacity": "Preview background opacity",
   "Tooltip_DisplayMode": "Style for storage container hover information.\nDefault: X items, Y free slots.\nSlots only: X/Y slots occupied.\nPreview: popup UI showing container contents.",
   "Tooltip_PreviewUIBackround": "In Preview mode, adds dark background behind the UI to improve visibility.",
-  "Tooltip_PreviewUIBackgroundOpacity": "Adjusts colour of dark preview UI background (0 - translucent, 100% - solid colour)."
+  "Tooltip_PreviewUIBackgroundOpacity": "Adjusts colour of dark preview UI background (0 - translucent, 100% - solid colour).",
+  "PreviewUIAnchorX": "Preview UI horizontal position",
+  "PreviewUIAnchorY": "Preview UI vertical position",
+  "Tooltip_PreviewUIAnchorX": "Moves the preview UI left/right on screen (0 - left edge, 1 - right edge).",
+  "Tooltip_PreviewUIAnchorY": "Moves the preview UI up/down on screen (0 - bottom, 1 - top)."
 }

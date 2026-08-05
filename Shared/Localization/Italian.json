@@ -16,5 +16,9 @@
   "PreviewUIBackgroundOpacity": "Opacità dello sfondo dell'anteprima",
   "Tooltip_DisplayMode": "Stile per le informazioni dei contenitori al passaggio del mouse.\nPredefinita: X oggetti, Y slot liberi.\nSolo slot: X/Y slot occupati.\nAnteprima: interfaccia popup che mostra il contenuto del contenitore.",
   "Tooltip_PreviewUIBackround": "In modalità Anteprima, aggiunge uno sfondo scuro dietro l'interfaccia per migliorare la visibilità.",
-  "Tooltip_PreviewUIBackgroundOpacity": "Regola il colore dello sfondo scuro dell'interfaccia di anteprima (0 - traslucido, 100% - colore pieno)."
+  "Tooltip_PreviewUIBackgroundOpacity": "Regola il colore dello sfondo scuro dell'interfaccia di anteprima (0 - traslucido, 100% - colore pieno).",
+  "PreviewUIAnchorX": "Posizione orizzontale dell'anteprima",
+  "PreviewUIAnchorY": "Posizione verticale dell'anteprima",
+  "Tooltip_PreviewUIAnchorX": "Sposta l'anteprima a sinistra/destra sullo schermo (0 - bordo sinistro, 1 - bordo destro).",
+  "Tooltip_PreviewUIAnchorY": "Sposta l'anteprima in alto/basso sullo schermo (0 - in basso, 1 - in alto)."
 }

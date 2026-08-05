@@ -16,5 +16,9 @@
   "PreviewUIBackgroundOpacity": "Nieprzezroczystość tła podglądu",
   "Tooltip_DisplayMode": "Styl informacji o pojemniku po najechaniu kursorem.\nDomyślny: X przedmiotów, Y wolnych slotów.\nTylko sloty: X/Y slotów zajętych.\nPodgląd: wyskakujący interfejs pokazujący zawartość pojemnika.",
   "Tooltip_PreviewUIBackround": "W trybie Podgląd dodaje ciemne tło za interfejsem, aby poprawić widoczność.",
-  "Tooltip_PreviewUIBackgroundOpacity": "Ustawia kolor ciemnego tła interfejsu podglądu (0 - półprzezroczyste, 100% - jednolity kolor)."
+  "Tooltip_PreviewUIBackgroundOpacity": "Ustawia kolor ciemnego tła interfejsu podglądu (0 - półprzezroczyste, 100% - jednolity kolor).",
+  "PreviewUIAnchorX": "Pozioma pozycja podglądu interfejsu",
+  "PreviewUIAnchorY": "Pionowa pozycja podglądu interfejsu",
+  "Tooltip_PreviewUIAnchorX": "Przesuwa podgląd interfejsu w lewo/prawo (0 - lewa krawędź, 1 - prawa krawędź).",
+  "Tooltip_PreviewUIAnchorY": "Przesuwa podgląd interfejsu w górę/dół (0 - dół, 1 - góra)."
 }

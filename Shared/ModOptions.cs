@@ -19,10 +19,24 @@ namespace StorageInfo
         // Option row GameObjects, refreshed each menu open.
         private static GameObject previewUIBackgroundOptionObject;
         private static GameObject previewUIBackgroundOpacityOptionObject;
+        private static GameObject previewUIAnchorXOptionObject;
+        private static GameObject previewUIAnchorYOptionObject;
 
         [Choice(LabelLanguageId = "DisplayMode", TooltipLanguageId = "Tooltip_DisplayMode")]
         [OnChange(nameof(OnDisplayModeChanged))]
         public DisplayMode DisplayMode = DisplayMode.DisplayModeDefault;
+
+        // Only shown in Preview mode.
+        [Slider(0f, 1f, DefaultValue = StorageDetailUI.PanelAnchorX, Format = "{0:F2}", LabelLanguageId = "PreviewUIAnchorX", TooltipLanguageId = "Tooltip_PreviewUIAnchorX")]
+        [OnChange(nameof(OnPreviewUIAnchorXChanged))]
+        [OnGameObjectCreated(nameof(OnPreviewUIAnchorXOptionCreated))]
+        public float PreviewUIAnchorX = StorageDetailUI.PanelAnchorX;
+
+        // Only shown in Preview mode.
+        [Slider(0f, 1f, DefaultValue = StorageDetailUI.PanelAnchorY, Format = "{0:F2}", LabelLanguageId = "PreviewUIAnchorY", TooltipLanguageId = "Tooltip_PreviewUIAnchorY")]
+        [OnChange(nameof(OnPreviewUIAnchorYChanged))]
+        [OnGameObjectCreated(nameof(OnPreviewUIAnchorYOptionCreated))]
+        public float PreviewUIAnchorY = StorageDetailUI.PanelAnchorY;
 
         // Only shown in Preview mode.
         [Toggle(LabelLanguageId = "PreviewUIBackround", TooltipLanguageId = "Tooltip_PreviewUIBackround")]
@@ -53,6 +67,28 @@ namespace StorageInfo
             StorageDetailUI.RefreshAppearance();
         }
 
+        private void OnPreviewUIAnchorXChanged(object sender, SliderChangedEventArgs e)
+        {
+            StorageDetailUI.RefreshAppearance();
+        }
+
+        private void OnPreviewUIAnchorYChanged(object sender, SliderChangedEventArgs e)
+        {
+            StorageDetailUI.RefreshAppearance();
+        }
+
+        private void OnPreviewUIAnchorXOptionCreated(GameObjectCreatedEventArgs e)
+        {
+            previewUIAnchorXOptionObject = e.Value;
+            ApplyBackgroundVisibility();
+        }
+
+        private void OnPreviewUIAnchorYOptionCreated(GameObjectCreatedEventArgs e)
+        {
+            previewUIAnchorYOptionObject = e.Value;
+            ApplyBackgroundVisibility();
+        }
+
         private void OnPreviewUIBackgroundOpacityOptionCreated(GameObjectCreatedEventArgs e)
         {
             previewUIBackgroundOpacityOptionObject = e.Value;
@@ -79,6 +115,16 @@ namespace StorageInfo
             if (previewUIBackgroundOpacityOptionObject != null)
             {
                 previewUIBackgroundOpacityOptionObject.SetActive(preview && PreviewUIBackround);
+            }
+
+            if (previewUIAnchorXOptionObject != null)
+            {
+                previewUIAnchorXOptionObject.SetActive(preview);
+            }
+
+            if (previewUIAnchorYOptionObject != null)
+            {
+                previewUIAnchorYOptionObject.SetActive(preview);
             }
         }
     }

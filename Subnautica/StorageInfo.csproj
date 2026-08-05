@@ -144,7 +144,7 @@ if not exist "..\ZIP" mkdir "..\ZIP"
 
 if exist "%25MODDIR%25plugins\StorageInfo" rmdir /s /q "%25MODDIR%25plugins\StorageInfo"
 
-xcopy "$(ProjectDir)BepInEx\plugins\StorageInfo\*" "%25MODDIR%25plugins\StorageInfo\" /i /e /r /y /q >nul
+xcopy "$(ProjectDir)BepInEx\plugins\StorageInfo\*" "%25MODDIR%25plugins\StorageInfo\" /i /e /r /y /q &gt;nul
 
 "C:\Program Files\7-Zip\7z.exe" a -mx9 -bso0 -bse2 -bsp0 "%25ZIPFILE%25" "BepInEx\plugins\StorageInfo"</PostBuildEvent>
   </PropertyGroup>
