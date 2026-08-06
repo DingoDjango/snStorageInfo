@@ -2,10 +2,11 @@
 
 ### **Description:**
 
-In Subnautica, only empty containers relay their status to the player. With this mod containers will always show if they are:
-- Empty
-- Full
-- Have a certain amount of items, but aren't full
+Vanilla Subnautica only relays "empty" status of storage containers to the player. Storage Info gives you more information:
+- **Container status** - look at a container to see whether it's empty, full, or how many items/free slots it has.
+- **Preview UI** - popup item grid lets you see inside a container without opening it!
+
+Everything is configurable in **Menu → Options → Mods → Storage Info**.
 
 **For Below Zero instructions please view the [Nexus mod page](https://www.nexusmods.com/subnauticabelowzero/mods/361).**
 
@@ -27,11 +28,11 @@ In Subnautica, only empty containers relay their status to the player. With this
 ### **FAQ:**
 
 - **Q. Does this mod support the latest Subnautica update?**
-- A. Latest version tested on September 2025
+- A. Yes. Tested August 2026
 - **Q. Is this mod safe to add or remove from an existing save?**
 - A. Yes
 - **Q. Does this mod have any known conflicts?**
-- A. No, unless some other mod patches *StorageContainer.OnHandHover* and doesn't play nice
+- A. Not yet
 
 [Source code can be found here.](https://github.com/DingoDjango/snStorageInfo)
 
