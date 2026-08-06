@@ -15,12 +15,12 @@
   "ReticleTextDisplayModeDisabled": "Wyłączony",
   "PreviewUI": "Podgląd interfejsu",
   "Tooltip_PreviewUI": "Pokazuje wyskakujący interfejs z zawartością pojemnika, gdy na niego patrzysz.",
-  "PreviewUIBackround": "Tło podglądu interfejsu",
-  "Tooltip_PreviewUIBackround": "Dodaje ciemne tło za interfejsem podglądu, aby poprawić widoczność.",
+  "PreviewUIBackground": "Tło podglądu interfejsu",
+  "Tooltip_PreviewUIBackground": "Dodaje ciemne tło za interfejsem podglądu, aby poprawić widoczność.",
   "PreviewUIBackgroundOpacity": "Nieprzezroczystość tła podglądu",
-  "Tooltip_PreviewUIBackgroundOpacity": "Ustawia kolor ciemnego tła interfejsu podglądu (0 - półprzezroczyste, 100% - jednolity kolor).",
+  "Tooltip_PreviewUIBackgroundOpacity": "Ustawia kolor ciemnego tła interfejsu podglądu\n<b>Zakres:</b>0 (półprzezroczyste) do 100% (jednolity kolor).",
   "PreviewUIAnchorX": "Pozioma pozycja podglądu interfejsu",
-  "Tooltip_PreviewUIAnchorX": "Przesuwa podgląd interfejsu w lewo/prawo (0 - lewa krawędź, 1 - prawa krawędź).",
+  "Tooltip_PreviewUIAnchorX": "Przesuwa podgląd interfejsu w lewo/prawo\n<b>Zakres:</b>0 (lewa krawędź) do 1 (prawa krawędź).",
   "PreviewUIAnchorY": "Pionowa pozycja podglądu interfejsu",
-  "Tooltip_PreviewUIAnchorY": "Przesuwa podgląd interfejsu w górę/dół (0 - dół, 1 - góra)."
+  "Tooltip_PreviewUIAnchorY": "Przesuwa podgląd interfejsu w górę/dół\n<b>Zakres:</b>0 (dół) do 1 (góra)."
 }

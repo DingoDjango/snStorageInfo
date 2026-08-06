@@ -15,12 +15,12 @@
   "ReticleTextDisplayModeDisabled": "Disabled",
   "PreviewUI": "Preview UI",
   "Tooltip_PreviewUI": "Shows a popup UI with the storage container's contents when looking at it.",
-  "PreviewUIBackround": "Preview UI background",
-  "Tooltip_PreviewUIBackround": "Adds dark background behind the Preview UI to improve visibility.",
+  "PreviewUIBackground": "Preview UI background",
+  "Tooltip_PreviewUIBackground": "Adds dark background behind the Preview UI to improve visibility.",
   "PreviewUIBackgroundOpacity": "Preview background opacity",
-  "Tooltip_PreviewUIBackgroundOpacity": "Adjusts colour of dark preview UI background (0 - translucent, 100% - solid colour).",
+  "Tooltip_PreviewUIBackgroundOpacity": "Adjusts colour of dark preview UI background\n<b>Range:</b>0 (translucent) to 100% (solid colour).",
   "PreviewUIAnchorX": "Preview UI horizontal position",
-  "Tooltip_PreviewUIAnchorX": "Moves the preview UI left/right on screen (0 - left edge, 1 - right edge).",
+  "Tooltip_PreviewUIAnchorX": "Moves the preview UI left/right on screen\n<b>Range:</b>0 (left edge) to 1 (right edge).",
   "PreviewUIAnchorY": "Preview UI vertical position",
-  "Tooltip_PreviewUIAnchorY": "Moves the preview UI up/down on screen (0 - bottom, 1 - top)."
+  "Tooltip_PreviewUIAnchorY": "Moves the preview UI up/down on screen\n<b>Range:</b>0 (bottom) to 1 (top)."
 }
