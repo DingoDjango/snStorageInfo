@@ -134,9 +134,9 @@
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>if exist "$(ProjectDir)BepInEx\plugins\StorageInfo" rmdir /s /q "$(ProjectDir)BepInEx\plugins\StorageInfo"</PreBuildEvent>
-  </PropertyGroup>
+  <Target Name="CleanPluginOutput" BeforeTargets="BeforeBuild" Condition="Exists('$(ProjectDir)BepInEx\plugins\StorageInfo')">
+    <RemoveDir Directories="$(ProjectDir)BepInEx\plugins\StorageInfo" ContinueOnError="true" />
+  </Target>
   <PropertyGroup>
     <PostBuildEvent>cd /d "$(ProjectDir)"
 SET MODDIR=C:\Program Files (x86)\Steam\steamapps\common\Subnautica\BepInEx\

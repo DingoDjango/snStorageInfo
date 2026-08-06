@@ -55,9 +55,27 @@ namespace StorageInfo
         private static bool cornerSpritesOwned;
         private static Image backgroundOverlay;
         private static uGUI_ItemsContainer cachedVanillaContainer;
-        private static bool CanShowOverlay(ItemsContainer container)
+        private static CanvasGroup rootCanvasGroup;
+        // Vanilla uGUI_SceneLoading fades the loading background out after WaitScreen.IsWaiting clears.
+        private static float GetLoadingFade()
         {
             if (WaitScreen.IsWaiting)
+            {
+                return 1f;
+            }
+
+            if (uGUI.main == null || uGUI.main.loading == null || uGUI.main.loading.loadingBackground == null)
+            {
+                return 0f;
+            }
+
+            CanvasGroup backgroundCanvasGroup = uGUI.main.loading.loadingBackground.canvasGroup;
+            return backgroundCanvasGroup != null ? backgroundCanvasGroup.alpha : 0f;
+        }
+
+        private static bool CanShowOverlay(ItemsContainer container)
+        {
+            if (GetLoadingFade() >= 1f)
             {
                 return false;
             }
@@ -119,9 +137,9 @@ namespace StorageInfo
             rootRect.offsetMin = Vector2.zero;
             rootRect.offsetMax = Vector2.zero;
 
-            CanvasGroup canvasGroup = root.AddComponent<CanvasGroup>();
-            canvasGroup.blocksRaycasts = false;
-            canvasGroup.interactable = false;
+            rootCanvasGroup = root.AddComponent<CanvasGroup>();
+            rootCanvasGroup.blocksRaycasts = false;
+            rootCanvasGroup.interactable = false;
 
             GameObject panelObj = new GameObject("Panel");
             panelObj.layer = uiLayer;
@@ -729,6 +747,7 @@ namespace StorageInfo
             LayoutPanel(container);
             root.transform.SetAsLastSibling();
             root.SetActive(true);
+            rootCanvasGroup.alpha = Mathf.Clamp01(1f - 2f * GetLoadingFade());
 
             itemsContainerView.DoUpdate();
         }
@@ -749,6 +768,9 @@ namespace StorageInfo
                 Hide();
                 return;
             }
+
+            // Fade in with the load-screen wipe; already 1 outside a wipe.
+            rootCanvasGroup.alpha = Mathf.Clamp01(1f - 2f * GetLoadingFade());
 
             // Vanilla per-frame bar update (batteries, food decay, etc.)
             itemsContainerView.DoUpdate();
@@ -816,6 +838,7 @@ namespace StorageInfo
 
             gridRawImage = null;
             backgroundOverlay = null;
+            rootCanvasGroup = null;
             panelRect = null;
             contentRect = null;
             itemsContainerView = null;
