@@ -6,11 +6,11 @@ using UnityEngine;
 
 namespace StorageInfo
 {
-    public enum DisplayMode
+    public enum ReticleTextDisplayMode
     {
-        DisplayModeDefault,
-        DisplayModeSlotsOnly,
-        DisplayModeDisabled
+        Default,
+        SlotsOnly,
+        Disabled
     }
 
     [Menu("Storage Info")]
@@ -22,8 +22,9 @@ namespace StorageInfo
         private static GameObject previewUIAnchorXOptionObject;
         private static GameObject previewUIAnchorYOptionObject;
 
-        [Choice(LabelLanguageId = "DisplayMode", TooltipLanguageId = "Tooltip_DisplayMode")]
-        public DisplayMode DisplayMode = DisplayMode.DisplayModeDefault;
+        [Choice(LabelLanguageId = "ReticleTextDisplayMode", TooltipLanguageId = "Tooltip_ReticleTextDisplayMode")]
+        [OnChange(nameof(OnReticleTextDisplayModeChanged))]
+        public ReticleTextDisplayMode ReticleTextDisplayMode = ReticleTextDisplayMode.Default;
 
         [Toggle(LabelLanguageId = "PreviewUI", TooltipLanguageId = "Tooltip_PreviewUI")]
         [OnChange(nameof(OnPreviewUIChanged))]
@@ -108,6 +109,11 @@ namespace StorageInfo
             {
                 StorageDetailUI.Hide();
             }
+        }
+
+        private void OnReticleTextDisplayModeChanged(object sender, ChoiceChangedEventArgs<ReticleTextDisplayMode> e)
+        {
+            HarmonyPatches.ResetTextDirty();
         }
 
         private void ApplyBackgroundVisibility()

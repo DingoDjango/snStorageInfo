@@ -12,7 +12,6 @@ namespace StorageInfo
         // Reticle text dirty-flag via vanilla ItemsContainer events.
         private static ItemsContainer subscribedContainer;
         private static bool textDirty = true;
-        private static DisplayMode lastAppliedMode;
 
         private static GameObject lastValidatedTarget;
 
@@ -56,7 +55,10 @@ namespace StorageInfo
         {
             hoveredStorage = null;
             UnsubscribeFromContainer();
-            StorageDetailUI.Hide();
+            if (ModPlugin.options.PreviewUI)
+            {
+                StorageDetailUI.Hide();
+            }
         }
 
         private static void Patch_GUIHand_OnUpdate_Postfix()
@@ -75,7 +77,10 @@ namespace StorageInfo
             {
                 hoveredStorage = null;
                 UnsubscribeFromContainer();
-                StorageDetailUI.Hide();
+                if (ModPlugin.options.PreviewUI)
+                {
+                    StorageDetailUI.Hide();
+                }
                 return;
             }
 
@@ -89,7 +94,10 @@ namespace StorageInfo
                 {
                     hoveredStorage = null;
                     UnsubscribeFromContainer();
-                    StorageDetailUI.Hide();
+                    if (ModPlugin.options.PreviewUI)
+                    {
+                        StorageDetailUI.Hide();
+                    }
                     return;
                 }
             }
@@ -206,7 +214,11 @@ namespace StorageInfo
             subscribedContainer = null;
             lastValidatedTarget = null;
             textDirty = true;
-            lastAppliedMode = (DisplayMode)(-1);
+        }
+
+        internal static void ResetTextDirty()
+        {
+            textDirty = true;
         }
 
         internal static void InitializeHarmony()
@@ -241,13 +253,15 @@ namespace StorageInfo
 
             if (itemStorage != null)
             {
-                switch (ModPlugin.options.DisplayMode)
+                switch (ModPlugin.options.ReticleTextDisplayMode)
                 {
-                    case DisplayMode.DisplayModeDefault:
+                    case ReticleTextDisplayMode.Default:
                         customSubscriptText = GetDefaultDisplayText(itemStorage);
                         break;
-                    case DisplayMode.DisplayModeSlotsOnly:
+                    case ReticleTextDisplayMode.SlotsOnly:
                         customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
+                        break;
+                    case ReticleTextDisplayMode.Disabled:
                         break;
                 }
             }
@@ -257,17 +271,19 @@ namespace StorageInfo
                 HandReticle.main.SetText(HandReticle.TextType.HandSubscript, customSubscriptText, false);
             }
 
-            if (!textDirty && ModPlugin.options.DisplayMode == lastAppliedMode)
+            if (!textDirty)
             {
                 return;
             }
 
             textDirty = false;
-            lastAppliedMode = ModPlugin.options.DisplayMode;
 
             if (itemStorage == null)
             {
-                StorageDetailUI.Hide();
+                if (ModPlugin.options.PreviewUI)
+                {
+                    StorageDetailUI.Hide();
+                }
             }
             else if (ModPlugin.options.PreviewUI && IsStorageInteractable(hoveredStorage))
             {
