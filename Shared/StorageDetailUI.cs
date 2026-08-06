@@ -599,7 +599,7 @@ namespace StorageInfo
             if (backgroundOverlay != null)
             {
                 backgroundOverlay.color = new Color(0f, 0f, 0f, ModPlugin.options.PreviewUIBackgroundOpacity);
-                backgroundOverlay.enabled = ModPlugin.options.PreviewUIBackround;
+                backgroundOverlay.enabled = ModPlugin.options.PreviewUIBackground;
             }
         }
 

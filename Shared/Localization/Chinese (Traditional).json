@@ -15,12 +15,12 @@
   "ReticleTextDisplayModeDisabled": "已停用",
   "PreviewUI": "預覽介面",
   "Tooltip_PreviewUI": "看向容器時顯示一個彈出介面，展示其中的內容。",
-  "PreviewUIBackround": "預覽介面背景",
-  "Tooltip_PreviewUIBackround": "在預覽介面後添加深色背景以提高可見性。",
+  "PreviewUIBackground": "預覽介面背景",
+  "Tooltip_PreviewUIBackground": "在預覽介面後添加深色背景以提高可見性。",
   "PreviewUIBackgroundOpacity": "預覽背景不透明度",
-  "Tooltip_PreviewUIBackgroundOpacity": "調整深色預覽介面背景的顏色（0 - 半透明，100% - 純色）。",
+  "Tooltip_PreviewUIBackgroundOpacity": "調整深色預覽介面背景的顏色\n<b>範圍：</b> 0（半透明）到 100%（純色）。",
   "PreviewUIAnchorX": "預覽介面水平位置",
-  "Tooltip_PreviewUIAnchorX": "在螢幕上左右移動預覽介面（0 - 左邊緣，1 - 右邊緣）。",
+  "Tooltip_PreviewUIAnchorX": "在螢幕上左右移動預覽介面\n<b>範圍：</b> 0（左邊緣）到 1（右邊緣）。",
   "PreviewUIAnchorY": "預覽介面垂直位置",
-  "Tooltip_PreviewUIAnchorY": "在螢幕上上下移動預覽介面（0 - 底部，1 - 頂部）。"
+  "Tooltip_PreviewUIAnchorY": "在螢幕上上下移動預覽介面\n<b>範圍：</b> 0（底部）到 1（頂部）。"
 }

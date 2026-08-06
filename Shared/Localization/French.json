@@ -15,12 +15,12 @@
   "ReticleTextDisplayModeDisabled": "Désactivé",
   "PreviewUI": "Aperçu de l'interface",
   "Tooltip_PreviewUI": "Affiche une interface contextuelle avec le contenu du conteneur lorsque vous le regardez.",
-  "PreviewUIBackround": "Arrière-plan de l'aperçu",
-  "Tooltip_PreviewUIBackround": "Ajoute un fond sombre derrière l'interface d'aperçu pour améliorer la visibilité.",
+  "PreviewUIBackground": "Arrière-plan de l'aperçu",
+  "Tooltip_PreviewUIBackground": "Ajoute un fond sombre derrière l'interface d'aperçu pour améliorer la visibilité.",
   "PreviewUIBackgroundOpacity": "Opacité de l'arrière-plan de l'aperçu",
-  "Tooltip_PreviewUIBackgroundOpacity": "Règle la couleur du fond sombre de l'interface d'aperçu (0 - translucide, 100% - couleur opaque).",
+  "Tooltip_PreviewUIBackgroundOpacity": "Règle la couleur du fond sombre de l'interface d'aperçu\n<b>Plage</b> : 0 (translucide) à 100% (couleur opaque).",
   "PreviewUIAnchorX": "Position horizontale de l'aperçu",
-  "Tooltip_PreviewUIAnchorX": "Déplace l'aperçu à gauche/droite à l'écran (0 - bord gauche, 1 - bord droit).",
+  "Tooltip_PreviewUIAnchorX": "Déplace l'aperçu à gauche/droite à l'écran\n<b>Plage</b> : 0 (bord gauche) à 1 (bord droit).",
   "PreviewUIAnchorY": "Position verticale de l'aperçu",
-  "Tooltip_PreviewUIAnchorY": "Déplace l'aperçu vers le haut/bas à l'écran (0 - en bas, 1 - en haut)."
+  "Tooltip_PreviewUIAnchorY": "Déplace l'aperçu vers le haut/bas à l'écran\n<b>Plage</b> : 0 (en bas) à 1 (en haut)."
 }

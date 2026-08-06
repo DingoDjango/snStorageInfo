@@ -43,10 +43,10 @@ namespace StorageInfo
         public float PreviewUIAnchorY = StorageDetailUI.PanelAnchorY;
 
         // Only shown in Preview mode.
-        [Toggle(LabelLanguageId = "PreviewUIBackround", TooltipLanguageId = "Tooltip_PreviewUIBackround")]
-        [OnChange(nameof(OnPreviewUIBackroundChanged))]
+        [Toggle(LabelLanguageId = "PreviewUIBackground", TooltipLanguageId = "Tooltip_PreviewUIBackground")]
+        [OnChange(nameof(OnPreviewUIBackgroundChanged))]
         [OnGameObjectCreated(nameof(OnBackgroundOptionCreated))]
-        public bool PreviewUIBackround = true;
+        public bool PreviewUIBackground = true;
 
         // Only shown in Preview mode with background enabled.
         [Slider(0f, 1f, DefaultValue = 0.75f, Format = "{0:F2}", LabelLanguageId = "PreviewUIBackgroundOpacity", TooltipLanguageId = "Tooltip_PreviewUIBackgroundOpacity")]
@@ -60,7 +60,7 @@ namespace StorageInfo
             ApplyBackgroundVisibility();
         }
 
-        private void OnPreviewUIBackroundChanged(object sender, ToggleChangedEventArgs e)
+        private void OnPreviewUIBackgroundChanged(object sender, ToggleChangedEventArgs e)
         {
             ApplyBackgroundVisibility();
             StorageDetailUI.RefreshAppearance();
@@ -119,8 +119,8 @@ namespace StorageInfo
         private void ApplyBackgroundVisibility()
         {
             // 1. Preview UI off: neither row is shown.
-            // 2. Preview UI on: PreviewUIBackround row shown.
-            // 3. Preview UI on + PreviewUIBackround enabled: opacity slider row also shown.
+            // 2. Preview UI on: PreviewUIBackground row shown.
+            // 3. Preview UI on + PreviewUIBackground enabled: opacity slider row also shown.
             bool preview = PreviewUI;
 
             if (previewUIBackgroundOptionObject != null)
@@ -130,7 +130,7 @@ namespace StorageInfo
 
             if (previewUIBackgroundOpacityOptionObject != null)
             {
-                previewUIBackgroundOpacityOptionObject.SetActive(preview && PreviewUIBackround);
+                previewUIBackgroundOpacityOptionObject.SetActive(preview && PreviewUIBackground);
             }
 
             if (previewUIAnchorXOptionObject != null)
