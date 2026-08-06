@@ -79,6 +79,18 @@ namespace StorageInfo
                 return false;
             }
 
+            // Block while placing base pieces
+            if (Builder.isPlacing)
+            {
+                return false;
+            }
+
+            // Vanilla click gate (Player.IsFreeToInteract): blocks cinematics, death and locked modes.
+            if (!Player.main.IsFreeToInteract())
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -236,7 +248,9 @@ namespace StorageInfo
             else
             {
                 // Vanilla grid texture unavailable: generic 1-cell tile with border on cell edges.
+#if DEBUG
                 ModPlugin.LogMessage("Preview grid: no vanilla texture, using procedural tile");
+#endif
                 if (gridTexture == null)
                 {
                     gridTexture = CreateGridTile(CellSize);
@@ -435,7 +449,9 @@ namespace StorageInfo
             }
 
             // Vanilla corner sprites unavailable: generic procedural L-shapes, sliced into 4 sprites.
+#if DEBUG
             ModPlugin.LogMessage("Preview corners: no vanilla sprites, using procedural corner texture");
+#endif
             if (cornerTexture == null)
             {
                 cornerTexture = CreateProceduralCornerTexture();
@@ -469,7 +485,9 @@ namespace StorageInfo
                 return panelSprite;
             }
             // Vanilla background unavailable: generic procedural dark grid texture.
+#if DEBUG
             ModPlugin.LogMessage("Preview panel background: no vanilla background, using procedural texture");
+#endif
             panelTexture = CreateProceduralPanelTexture();
             panelTextureOwned = true;
 

@@ -10,7 +10,7 @@ namespace StorageInfo
     {
         DisplayModeDefault,
         DisplayModeSlotsOnly,
-        DisplayModePreview
+        DisplayModeDisabled
     }
 
     [Menu("Storage Info")]
@@ -23,10 +23,13 @@ namespace StorageInfo
         private static GameObject previewUIAnchorYOptionObject;
 
         [Choice(LabelLanguageId = "DisplayMode", TooltipLanguageId = "Tooltip_DisplayMode")]
-        [OnChange(nameof(OnDisplayModeChanged))]
         public DisplayMode DisplayMode = DisplayMode.DisplayModeDefault;
 
-        // Only shown in Preview mode.
+        [Toggle(LabelLanguageId = "PreviewUI", TooltipLanguageId = "Tooltip_PreviewUI")]
+        [OnChange(nameof(OnPreviewUIChanged))]
+        public bool PreviewUI = false;
+
+        // Only shown when Preview UI toggle is enabled.
         [Slider(0f, 1f, DefaultValue = StorageDetailUI.PanelAnchorX, Format = "{0:F2}", LabelLanguageId = "PreviewUIAnchorX", TooltipLanguageId = "Tooltip_PreviewUIAnchorX")]
         [OnChange(nameof(OnPreviewUIAnchorXChanged))]
         [OnGameObjectCreated(nameof(OnPreviewUIAnchorXOptionCreated))]
@@ -95,17 +98,24 @@ namespace StorageInfo
             ApplyBackgroundVisibility();
         }
 
-        private void OnDisplayModeChanged(object sender, ChoiceChangedEventArgs<DisplayMode> e)
+        private void OnPreviewUIChanged(object sender, ToggleChangedEventArgs e)
         {
             ApplyBackgroundVisibility();
+            StorageDetailUI.RefreshAppearance();
+
+            // Immediate hide when the toggle is turned off (avoids waiting for next hover frame).
+            if (!e.Value)
+            {
+                StorageDetailUI.Hide();
+            }
         }
 
         private void ApplyBackgroundVisibility()
         {
-            // 1. Not in Preview mode: neither row is shown.
-            // 2. Preview mode: PreviewUIBackround row shown.
-            // 3. Preview mode + PreviewUIBackround enabled: opacity slider row also shown.
-            bool preview = DisplayMode == DisplayMode.DisplayModePreview;
+            // 1. Preview UI off: neither row is shown.
+            // 2. Preview UI on: PreviewUIBackround row shown.
+            // 3. Preview UI on + PreviewUIBackround enabled: opacity slider row also shown.
+            bool preview = PreviewUI;
 
             if (previewUIBackgroundOptionObject != null)
             {

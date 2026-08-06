@@ -23,6 +23,18 @@ namespace StorageInfo
             return !WaitScreen.IsWaiting;
         }
 
+        // Mirrors vanilla StorageContainer.OnHandHover/OnHandClick
+        private static bool IsStorageInteractable(StorageContainer storage)
+        {
+            if (storage == null || !storage.enabled)
+            {
+                return false;
+            }
+
+            Constructable constructable = storage.GetComponent<Constructable>();
+            return constructable == null || constructable.constructed;
+        }
+
         private static void Patch_OnHandHover_Postfix(StorageContainer __instance)
         {
             if (!IsGameInteractive())
@@ -30,7 +42,7 @@ namespace StorageInfo
                 return;
             }
 
-            if (__instance == null || __instance.container == null)
+            if (__instance == null || __instance.container == null || !IsStorageInteractable(__instance))
             {
                 return;
             }
@@ -82,7 +94,7 @@ namespace StorageInfo
                 }
             }
 
-            if (ModPlugin.options.DisplayMode == DisplayMode.DisplayModePreview && hoveredStorage.container != null)
+            if (ModPlugin.options.PreviewUI && hoveredStorage.container != null && IsStorageInteractable(hoveredStorage))
             {
                 StorageDetailUI.Tick(hoveredStorage.container);
             }
@@ -235,7 +247,6 @@ namespace StorageInfo
                         customSubscriptText = GetDefaultDisplayText(itemStorage);
                         break;
                     case DisplayMode.DisplayModeSlotsOnly:
-                    case DisplayMode.DisplayModePreview:
                         customSubscriptText = GetSlotsOnlyDisplayText(itemStorage);
                         break;
                 }
@@ -258,7 +269,7 @@ namespace StorageInfo
             {
                 StorageDetailUI.Hide();
             }
-            else if (ModPlugin.options.DisplayMode == DisplayMode.DisplayModePreview)
+            else if (ModPlugin.options.PreviewUI && IsStorageInteractable(hoveredStorage))
             {
                 StorageDetailUI.Show(itemStorage);
             }
