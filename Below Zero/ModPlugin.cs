@@ -22,10 +22,14 @@ namespace StorageInfo
             options = OptionsPanelHandler.RegisterModOptions<StorageInfoOptions>();
     
             HarmonyPatches.InitializeHarmony();
+
+            // Free the overlay, panel sprite/texture and any bound container on scene change.
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
 
         private void OnDestroy()
         {
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
             StorageDetailUI.Cleanup();
         }
 

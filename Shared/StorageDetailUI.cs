@@ -47,7 +47,9 @@ namespace StorageInfo
         private static Sprite panelSprite;
         private static Texture2D panelTexture;
         private static bool panelTextureOwned; // True = panelTexture mod-created, False = vanilla shared asset (never destroyed)
-        private static Texture2D cachedBZPanelTexture; // Embedded PDACellBackground.png for BZ
+#if BELOWZERO
+        private static Texture2D cachedBZPanelTexture; // PDACellBackground.png in mod folder, from vanilla SN
+#endif
         private static RawImage gridRawImage;
         private static Texture2D gridTexture;
         private static Image[] cornerImageComponents; // Corner L-shape images (TL/TR/BL/BR) childed to the grid rect, like vanilla.
