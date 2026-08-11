@@ -558,7 +558,12 @@ namespace StorageInfo
         private static Texture2D GetVanillaBackgroundTexture()
         {
 #if BELOWZERO
-            // BZ: uGUI_ItemsContainer has no background field; procedural panel used.
+            // BZ: no per-container background field; PDA backdrop is the panel art.
+            if (uGUI_PDA.main != null && uGUI_PDA.main.pdaBackground != null && uGUI_PDA.main.pdaBackground.sprite != null)
+            {
+                return uGUI_PDA.main.pdaBackground.sprite.texture as Texture2D;
+            }
+
             return null;
 #else
             uGUI_ItemsContainer vanilla = FindVanillaContainer();
