@@ -11,7 +11,7 @@ namespace StorageInfo
     {
         public const string modGUID = "Dingo.SNBZ.StorageInfo";
         public const string modName = "Storage Info BZ";
-        public const string modVersion = "2.8.3031";
+        public const string modVersion = "3.0.8.3031";
 
         public static StorageInfoOptions options;
 
@@ -35,6 +35,7 @@ namespace StorageInfo
 
         private void OnSceneUnloaded(Scene scene)
         {
+            HarmonyPatches.ResetSceneState();
             StorageDetailUI.Cleanup();
         }
 

@@ -1,13 +1,26 @@
-﻿{
+{
   "ContainerEmpty": "empty",
   "ContainerFull": "full",
   "ContainerOneItem": "1 item (not full)",
-  "ContainerNonempty": "{0} items (not full)",
   "ContainerOneItemSlotsFree": "1 item, {0} slots free",
+  "ContainerOneItemOneSlotFree": "1 item, 1 slot free",
+  "ContainerNonempty": "{0} items (not full)",
   "ContainerNonemptySlotsFree": "{0} items, {1} slots free",
+  "ContainerNonemptyOneSlotFree": "{0} items, 1 slot free",
   "SlotsOccupied": "occupied",
-  "DisplayMode": "Display mode",
-  "DisplayModeDefault": "Default",
-  "DisplayModeSlotsOnly": "Slots only",
-  "DisplayModeDetailedList": "Detailed"
+  "ReticleTextDisplayMode": "Reticle text display mode",
+  "Tooltip_ReticleTextDisplayMode": "Style for storage container hover text.\n<b>Default</b>: X items, Y free slots.\n<b>Slots only</b>: X/Y slots occupied.\n<b>Disabled</b>: no hover text.",
+  "ReticleTextDisplayModeDefault": "Default",
+  "ReticleTextDisplayModeSlotsOnly": "Slots only",
+  "ReticleTextDisplayModeDisabled": "Disabled",
+  "PreviewUI": "Preview UI",
+  "Tooltip_PreviewUI": "Shows a popup UI with the storage container's contents when looking at it.",
+  "PreviewUIBackground": "Preview UI background",
+  "Tooltip_PreviewUIBackground": "Adds dark background behind the Preview UI to improve visibility.",
+  "PreviewUIBackgroundOpacity": "Preview background opacity",
+  "Tooltip_PreviewUIBackgroundOpacity": "Adjusts colour of dark preview UI background\n<b>Range:</b>0 (translucent) to 100% (solid colour).",
+  "PreviewUIAnchorX": "Preview UI horizontal position",
+  "Tooltip_PreviewUIAnchorX": "Moves the preview UI left/right on screen\n<b>Range:</b>0 (left edge) to 1 (right edge).",
+  "PreviewUIAnchorY": "Preview UI vertical position",
+  "Tooltip_PreviewUIAnchorY": "Moves the preview UI up/down on screen\n<b>Range:</b>0 (bottom) to 1 (top)."
 }

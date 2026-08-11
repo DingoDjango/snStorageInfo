@@ -18,25 +18,26 @@
     <DebugType>embedded</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>BepInEx\plugins\StorageInfo_BZ\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;BELOWZERO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <LangVersion>7.1</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>BepInEx\plugins\StorageInfo_BZ\</OutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants>BELOWZERO</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <LangVersion>7.1</LangVersion>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -114,25 +115,29 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Shared\Localization\*.json">
+    <None Include="..\Shared\Localization\*.*">
       <Link>Localization\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-	Other similar extension points exist, see Microsoft.Common.targets.
-	<Target Name="BeforeBuild">
-	</Target> -->
+  <Target Name="CleanPluginOutput" BeforeTargets="BeforeBuild" Condition="Exists('$(ProjectDir)BepInEx\plugins\StorageInfo_BZ')">
+    <RemoveDir Directories="$(ProjectDir)BepInEx\plugins\StorageInfo_BZ" ContinueOnError="true" />
+  </Target>
   <PropertyGroup>
     <PostBuildEvent>cd /d "$(ProjectDir)"
-SET MODDIR=C:\Games\Subnautica - Below Zero\BepInEx\
+SET MODDIR=C:\Games\Below Zero\BepInEx\
 SET ZIPFILE=..\ZIP\BelowZero\$(ProjectName).zip
 
-if not exist "$(ProjectDir)..\ZIP" mkdir "$(ProjectDir)..\ZIP"
+if exist "%25MODDIR%25plugins\StorageInfo_BZ" rmdir /s /q "%25MODDIR%25plugins\StorageInfo_BZ"
 
-xcopy "$(ProjectDir)BepInEx\*" "%25MODDIR%25" /i /e /r /y
+xcopy "$(ProjectDir)BepInEx\plugins\StorageInfo_BZ\*" "%25MODDIR%25plugins\StorageInfo_BZ\" /i /e /r /y /q >nul
 
-"C:\Program Files\7-Zip\7z.exe" a -mx9 "%25ZIPFILE%25" "BepInEx\plugins\StorageInfo_BZ"</PostBuildEvent>
+if "$(Configuration)" == "Debug" (
+    if exist "%25ZIPFILE%25" del /f /q "%25ZIPFILE%25"
+) else (
+    if not exist "..\ZIP" mkdir "..\ZIP"
+    "C:\Program Files\7-Zip\7z.exe" a -mx9 -bso0 -bse2 -bsp0 "%25ZIPFILE%25" "BepInEx\plugins\StorageInfo_BZ"
+)</PostBuildEvent>
   </PropertyGroup>
 </Project>

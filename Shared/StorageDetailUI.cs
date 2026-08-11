@@ -238,15 +238,16 @@ namespace StorageInfo
         private static void ApplyGridAppearance()
         {
             uGUI_ItemsContainer vanilla = FindVanillaContainer();
+            RawImage vanillaGrid = GetVanillaGridRawImage(vanilla);
             Texture sourceTexture = null;
             Material sourceMaterial = null;
             Color sourceColor = Color.white;
 
-            if (vanilla != null && vanilla.grid != null)
+            if (vanillaGrid != null)
             {
-                sourceTexture = vanilla.grid.texture;
-                sourceMaterial = vanilla.grid.material;
-                sourceColor = vanilla.grid.color;
+                sourceTexture = vanillaGrid.texture;
+                sourceMaterial = vanillaGrid.material;
+                sourceColor = vanillaGrid.color;
             }
 
             if (sourceTexture is Texture2D sourceTex2D)
@@ -286,9 +287,13 @@ namespace StorageInfo
 
         private static uGUI_ItemsContainer FindVanillaContainer()
         {
-            if (cachedVanillaContainer != null && cachedVanillaContainer.grid != null && cachedVanillaContainer.grid.texture != null)
+            if (cachedVanillaContainer != null)
             {
-                return cachedVanillaContainer;
+                RawImage cachedGrid = GetVanillaGridRawImage(cachedVanillaContainer);
+                if (cachedGrid != null && cachedGrid.texture != null)
+                {
+                    return cachedVanillaContainer;
+                }
             }
             cachedVanillaContainer = null;
 
@@ -330,7 +335,8 @@ namespace StorageInfo
             uGUI_ItemsContainer[] allContainers = Resources.FindObjectsOfTypeAll<uGUI_ItemsContainer>();
             for (int containerIndex = 0; containerIndex < allContainers.Length; containerIndex++)
             {
-                if (allContainers[containerIndex].grid != null && allContainers[containerIndex].grid.texture != null)
+                RawImage grid = GetVanillaGridRawImage(allContainers[containerIndex]);
+                if (grid != null && grid.texture != null)
                 {
                     cachedVanillaContainer = allContainers[containerIndex];
                     return allContainers[containerIndex];
@@ -349,12 +355,44 @@ namespace StorageInfo
             uGUI_ItemsContainer[] containers = root.GetComponentsInChildren<uGUI_ItemsContainer>(true);
             for (int containerIndex = 0; containerIndex < containers.Length; containerIndex++)
             {
-                if (containers[containerIndex].grid != null && containers[containerIndex].grid.texture != null)
+                RawImage grid = GetVanillaGridRawImage(containers[containerIndex]);
+                if (grid != null && grid.texture != null)
                 {
                     return containers[containerIndex];
                 }
             }
             return null;
+        }
+
+        // Vanilla container grid RawImage: SN on uGUI_ItemsContainer, BZ on active uGUI_ItemsContainerSkin.
+        private static RawImage GetVanillaGridRawImage(uGUI_ItemsContainer vanilla)
+        {
+#if BELOWZERO
+            if (vanilla != null && vanilla.skins != null)
+            {
+                for (int skinIndex = 0; skinIndex < vanilla.skins.Length; skinIndex++)
+                {
+                    uGUI_ItemsContainerSkin skin = vanilla.skins[skinIndex];
+                    if (skin != null && skin.canvasGroup != null && skin.canvasGroup.alpha > 0f)
+                    {
+                        return skin.grid;
+                    }
+                }
+
+                for (int skinIndex = 0; skinIndex < vanilla.skins.Length; skinIndex++)
+                {
+                    uGUI_ItemsContainerSkin skin = vanilla.skins[skinIndex];
+                    if (skin != null && skin.grid != null)
+                    {
+                        return skin.grid;
+                    }
+                }
+            }
+
+            return null;
+#else
+            return vanilla != null ? vanilla.grid : null;
+#endif
         }
 
         private static void SetGridTexture(Texture2D texture, bool owned)
@@ -432,11 +470,12 @@ namespace StorageInfo
 
             // Try vanilla corner images first: Grid/TL, Grid/TR, Grid/BL, Grid/BR.
             Sprite[] vanillaSprites = null;
-            if (vanilla != null && vanilla.grid != null)
+            RawImage vanillaGrid = GetVanillaGridRawImage(vanilla);
+            if (vanillaGrid != null)
             {
                 vanillaSprites = new Sprite[4];
                 string[] cornerNames = { "TL", "TR", "BL", "BR" };
-                Transform gridTransform = vanilla.grid.transform;
+                Transform gridTransform = vanillaGrid.transform;
                 for (int cornerIndex = 0; cornerIndex < cornerNames.Length; cornerIndex++)
                 {
                     Transform cornerTransform = gridTransform.Find(cornerNames[cornerIndex]);
@@ -518,6 +557,10 @@ namespace StorageInfo
         // Vanilla container.background is the stretched PDACellBackground RawImage.
         private static Texture2D GetVanillaBackgroundTexture()
         {
+#if BELOWZERO
+            // BZ: uGUI_ItemsContainer has no background field; procedural panel used.
+            return null;
+#else
             uGUI_ItemsContainer vanilla = FindVanillaContainer();
             if (vanilla == null || vanilla.background == null)
             {
@@ -537,6 +580,7 @@ namespace StorageInfo
             }
 
             return null;
+#endif
         }
 
         // Procedural fallback: dark translucent grid texture.
