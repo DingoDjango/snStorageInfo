@@ -1,4 +1,4 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 using Nautilus.Utility;
 using System;
 using UnityEngine;
@@ -45,8 +45,9 @@ namespace StorageInfo
         private static ItemsContainer boundContainer;
         private static bool isBuilt;
         private static Sprite panelSprite;
-        private static Texture2D panelTexture;         
+        private static Texture2D panelTexture;
         private static bool panelTextureOwned; // True = panelTexture mod-created, False = vanilla shared asset (never destroyed)
+        private static Texture2D cachedBZPanelTexture; // Embedded PDACellBackground.png for BZ
         private static RawImage gridRawImage;
         private static Texture2D gridTexture;
         private static Image[] cornerImageComponents; // Corner L-shape images (TL/TR/BL/BR) childed to the grid rect, like vanilla.
@@ -197,8 +198,6 @@ namespace StorageInfo
 
             gridRawImage = gridObj.AddComponent<RawImage>();
             gridRawImage.raycastTarget = false;
-            // Set initial uvRect so grid tiles correctly once texture is assigned
-            gridRawImage.uvRect = new Rect(0f, 0f, 1f, 1f);
 
             // Corner L-shapes (TL/TR/BL/BR), children of the grid like vanilla.
             cornerImageComponents = new Image[4];
@@ -373,6 +372,7 @@ namespace StorageInfo
                 for (int skinIndex = 0; skinIndex < vanilla.skins.Length; skinIndex++)
                 {
                     uGUI_ItemsContainerSkin skin = vanilla.skins[skinIndex];
+
                     if (skin != null && skin.canvasGroup != null && skin.canvasGroup.alpha > 0f)
                     {
                         return skin.grid;
@@ -394,6 +394,44 @@ namespace StorageInfo
             return vanilla != null ? vanilla.grid : null;
 #endif
         }
+
+
+        private static Transform GetVanillaCornerTransform(uGUI_ItemsContainer vanilla, string cornerName)
+        {
+#if BELOWZERO
+            // BZ corner L-shapes (TL/TR/BL/BR) live under the ACTIVE skin root, siblings of Grid -
+            // not under grid.transform like SN. Prefer the active skin (canvasGroup alpha>0).
+            if (vanilla == null || vanilla.skins == null)
+            {
+                return null;
+            }
+            for (int pass = 0; pass < 2; pass++)
+            {
+                for (int skinIndex = 0; skinIndex < vanilla.skins.Length; skinIndex++)
+                {
+                    uGUI_ItemsContainerSkin skin = vanilla.skins[skinIndex];
+                    if (skin == null || skin.canvasGroup == null)
+                    {
+                        continue;
+                    }
+                    if (pass == 0 && skin.canvasGroup.alpha <= 0f)
+                    {
+                        continue;
+                    }
+                    Transform corner = skin.transform.Find(cornerName);
+                    if (corner != null)
+                    {
+                        return corner;
+                    }
+                }
+            }
+            return null;
+#else
+            RawImage grid = GetVanillaGridRawImage(vanilla);
+            return grid != null ? grid.transform.Find(cornerName) : null;
+#endif
+        }
+
 
         private static void SetGridTexture(Texture2D texture, bool owned)
         {
@@ -418,14 +456,14 @@ namespace StorageInfo
         }
 
         // 1-cell tile with left/top border lines, tiled via uvRect.
-        private static Texture2D CreateGridTile(int size)
+        private static Texture2D CreateGridTile(int size, float lineAlpha = 0.15f)
         {
             Texture2D tile = new Texture2D(size, size, TextureFormat.RGBA32, false);
             tile.wrapMode = TextureWrapMode.Repeat;
             tile.filterMode = FilterMode.Bilinear;
 
             Color clear = new Color(0f, 0f, 0f, 0f);
-            Color line = new Color(0f, 0f, 0f, 0.15f);
+            Color line = new Color(0f, 0f, 0f, lineAlpha);
 
             for (int pixelY = 0; pixelY < size; pixelY++)
             {
@@ -475,10 +513,9 @@ namespace StorageInfo
             {
                 vanillaSprites = new Sprite[4];
                 string[] cornerNames = { "TL", "TR", "BL", "BR" };
-                Transform gridTransform = vanillaGrid.transform;
                 for (int cornerIndex = 0; cornerIndex < cornerNames.Length; cornerIndex++)
                 {
-                    Transform cornerTransform = gridTransform.Find(cornerNames[cornerIndex]);
+                    Transform cornerTransform = GetVanillaCornerTransform(vanilla, cornerNames[cornerIndex]);
                     Image cornerImage = cornerTransform != null ? cornerTransform.GetComponent<Image>() : null;
                     vanillaSprites[cornerIndex] = cornerImage != null ? cornerImage.sprite : null;
                 }
@@ -558,12 +595,23 @@ namespace StorageInfo
         private static Texture2D GetVanillaBackgroundTexture()
         {
 #if BELOWZERO
-            // BZ: no per-container background field; PDA backdrop is the panel art.
-            if (uGUI_PDA.main != null && uGUI_PDA.main.pdaBackground != null && uGUI_PDA.main.pdaBackground.sprite != null)
+            // BZ: load PDACellBackground.png from file (copied to output via Content Include) using Nautilus utility.
+            if (cachedBZPanelTexture != null)
             {
-                return uGUI_PDA.main.pdaBackground.sprite.texture as Texture2D;
+                return cachedBZPanelTexture;
             }
 
+            string modFolder = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string assetPath = System.IO.Path.Combine(modFolder, "Assets", "PDACellBackground.png");
+
+            cachedBZPanelTexture = ImageUtils.LoadTextureFromFile(assetPath, TextureFormat.RGBA32);
+            if (cachedBZPanelTexture != null)
+            {
+                cachedBZPanelTexture.wrapMode = TextureWrapMode.Repeat;
+                return cachedBZPanelTexture;
+            }
+
+            ModPlugin.LogMessage($"Failed to load asset file: {assetPath}");
             return null;
 #else
             uGUI_ItemsContainer vanilla = FindVanillaContainer();

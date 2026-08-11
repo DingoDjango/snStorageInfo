@@ -14,22 +14,18 @@ namespace StorageInfo
         public const string modVersion = "3.0.8.3031";
 
         public static StorageInfoOptions options;
-
+    
         private void Awake()
         {
             LanguageHandler.RegisterLocalizationFolder();
-
+    
             options = OptionsPanelHandler.RegisterModOptions<StorageInfoOptions>();
-
+    
             HarmonyPatches.InitializeHarmony();
-
-            // Free the overlay, panel sprite/texture and any bound container on scene change.
-            SceneManager.sceneUnloaded += OnSceneUnloaded;
         }
 
         private void OnDestroy()
         {
-            SceneManager.sceneUnloaded -= OnSceneUnloaded;
             StorageDetailUI.Cleanup();
         }
 
